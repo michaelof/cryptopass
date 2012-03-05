@@ -21,7 +21,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener {
 
 	private class BookmarksAdapter extends ResourceCursorAdapter {
 		public BookmarksAdapter(Cursor c) {
-			super(StartActivity.this, R.layout.bookmark, c, true);
+			super(StartActivity.this, R.layout.row_bookmark, c, true);
 		}
 
 		@Override
@@ -58,8 +58,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener {
 		} else {
 			ListView listView = getListView();
 
-			TextView headerView = (TextView) getLayoutInflater().inflate(R.layout.bookmark, listView, false);
-			headerView.setText("Empty");
+			TextView headerView = (TextView) getLayoutInflater().inflate(R.layout.row_empty, listView, false);
 
 			listView.addHeaderView(headerView);
 			listView.setOnItemClickListener(this);

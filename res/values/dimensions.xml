@@ -1,3 +1,4 @@
 <resources>
     <dimen name="listItemHeight">48dp</dimen>
+    <dimen name="listPadding">16dp</dimen>
 </resources>
