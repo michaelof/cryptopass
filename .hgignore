@@ -1,7 +1,7 @@
 syntax: glob
 bin/
-res/
 gen/
+.idea/
 proguard.cfg
 default.properties
 .project
