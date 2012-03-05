@@ -99,11 +99,13 @@ public class StartActivity extends ListActivity implements OnItemClickListener {
 		if (v == getListView()) {
 			AdapterContextMenuInfo adapterMenuInfo = (AdapterContextMenuInfo) menuInfo;
 
-			getMenuInflater().inflate(R.menu.context, menu);
+			if (INVALID_ID != adapterMenuInfo.id) {
+				getMenuInflater().inflate(R.menu.context, menu);
 
-			TextView tv = (TextView) adapterMenuInfo.targetView;
+				TextView tv = (TextView) adapterMenuInfo.targetView;
 
-			menu.setHeaderTitle(tv.getText());
+				menu.setHeaderTitle(tv.getText());
+			}
 		}
 	}
 
