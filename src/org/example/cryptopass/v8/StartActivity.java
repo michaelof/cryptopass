@@ -1,7 +1,6 @@
-package org.example.cryptopass;
+package org.example.cryptopass.v8;
 
 import android.app.ListActivity;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -13,29 +12,14 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
-import android.widget.ResourceCursorAdapter;
 import android.widget.TextView;
+import org.example.cryptopass.Bookmark;
+import org.example.cryptopass.BookmarksAdapter;
+import org.example.cryptopass.BookmarksHelper;
+import org.example.cryptopass.R;
 
 public class StartActivity extends ListActivity implements OnItemClickListener {
 	private static final int INVALID_ID = -1;
-
-	private class BookmarksAdapter extends ResourceCursorAdapter {
-		public BookmarksAdapter(Cursor c) {
-			super(StartActivity.this, R.layout.row_bookmark, c, true);
-		}
-
-		@Override
-		public void bindView(View view, Context context, Cursor cursor) {
-			TextView tv = (TextView) view;
-
-			String url = cursor.getString(BookmarksHelper.URL_COLUMN);
-			String username = cursor.getString(BookmarksHelper.USERNAME_COLUMN);
-
-			String text = String.format("%s @ %s", username, url);
-
-			tv.setText(text);
-		}
-	}
 
 	private BookmarksHelper helper;
 	private Cursor bookmarksCursor;
@@ -64,7 +48,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener {
 			listView.setOnItemClickListener(this);
 			registerForContextMenu(listView);
 
-			setListAdapter(new BookmarksAdapter(bookmarksCursor));
+			setListAdapter(new BookmarksAdapter(this, bookmarksCursor));
 		}
 	}
 

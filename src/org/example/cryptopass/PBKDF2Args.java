@@ -1,6 +1,6 @@
 package org.example.cryptopass;
 
-final class PBKDF2Args
+public final class PBKDF2Args
 {
 	public String password;
 	public String url;

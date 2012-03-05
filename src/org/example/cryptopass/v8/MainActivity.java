@@ -1,4 +1,4 @@
-package org.example.cryptopass;
+package org.example.cryptopass.v8;
 
 import android.app.Activity;
 import android.content.Context;
@@ -11,11 +11,12 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.EditText;
+import org.example.cryptopass.*;
 
 public final class MainActivity extends Activity implements TextWatcher, PBKDF2AsyncTask.ResultListener
 {
-	public final static String EXTRA_USERNAME = "org.example.cryptopass.MainActivity.username";
-	public final static String EXTRA_URL = "org.example.cryptopass.MainActivity.url";
+	public final static String EXTRA_USERNAME = "org.example.cryptopass.v8.MainActivity.username";
+	public final static String EXTRA_URL = "org.example.cryptopass.v8.MainActivity.url";
 
 	private PBKDF2AsyncTask activeTask = null;
 
@@ -188,7 +189,7 @@ public final class MainActivity extends Activity implements TextWatcher, PBKDF2A
 
 	void resultButtonWorking()
 	{
-		resultButton.setText("Working...");
+		resultButton.setText(R.string.working);
 		resultButton.setEnabled(false);
 	}
 
@@ -200,7 +201,7 @@ public final class MainActivity extends Activity implements TextWatcher, PBKDF2A
 
 	void resultButtonEmpty()
 	{
-		resultButton.setText("Secret is empty");
+		resultButton.setText(R.string.working_secret_empty);
 		resultButton.setEnabled(false);
 	}
 

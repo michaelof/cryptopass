@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">CryptoPass</string>
+    <string name="working">Working...</string>
+    <string name="working_secret_empty">Secret is empty</string>
 </resources>

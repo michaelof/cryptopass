@@ -1,6 +1,6 @@
 package org.example.cryptopass;
 
-final class Bookmark
+public final class Bookmark
 {
 	public final String url;
 	public final String username;
