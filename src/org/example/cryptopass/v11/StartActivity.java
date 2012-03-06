@@ -1,10 +1,12 @@
 package org.example.cryptopass.v11;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import org.example.cryptopass.R;
 
-public class StartActivity extends Activity implements BookmarksFragment.IListener{
+public class StartActivity extends Activity implements BookmarksFragment.IListener {
+	private static final String FIRST_START = "firstStart";
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
@@ -13,12 +15,23 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
 		setContentView(R.layout.start);
 
 		if (savedInstanceState == null) {
-			getFragmentManager().beginTransaction().add(R.id.rootView, new BookmarksFragment()).commit();
+			Intent intent = getIntent();
+
+			boolean firstStart = intent.getBooleanExtra(FIRST_START, false);
+
+			if (firstStart) {
+				getFragmentManager().beginTransaction().add(R.id.rootView, new MainFragment()).commit();
+			} else {
+				getFragmentManager().beginTransaction().add(R.id.rootView, new BookmarksFragment()).commit();
+			}
 		}
 	}
 
 	@Override
 	public void noBookmarks() {
-		//getFragmentManager().beginTransaction().add(R.id.rootView, new MainFragment()).commit();
+		Intent intent = new Intent(this, StartActivity.class);
+		intent.putExtra(FIRST_START, true);
+		startActivity(intent);
+		finish();
 	}
 }

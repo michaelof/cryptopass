@@ -57,7 +57,7 @@ public class PBKDF2KeyGenerator
 		this.hmac = Mac.getInstance(hmacAlgorith);
 	}
 
-	public byte[] generateKey(IterationsListener listener, String secret, byte[] salt) throws GeneralSecurityException
+	public byte[] generateKey(IIterationsListener listener, String secret, byte[] salt) throws GeneralSecurityException
 	{
 		SecretKey key = new SecretKeySpec(secret.getBytes(), hmac.getAlgorithm());
 		byte[] result = new byte[keyLengthBytes];

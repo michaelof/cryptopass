@@ -4,7 +4,7 @@ import android.util.Base64;
 
 public final class PasswordMaker
 {
-	public static String make(IterationsListener listener, String password, String username, String url, int length) throws Exception
+	public static String make(IIterationsListener listener, String password, String username, String url, int length) throws Exception
 	{
 		String salt = username + "@" + url;
 
