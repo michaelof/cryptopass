@@ -13,22 +13,33 @@ import android.widget.Button;
 import android.widget.EditText;
 import org.example.cryptopass.*;
 
-public final class MainActivity extends Activity implements TextWatcher, PBKDF2AsyncTask.ResultListener
+public final class MainActivity extends Activity implements TextWatcher
 {
 	public final static String EXTRA_USERNAME = "org.example.cryptopass.v8.MainActivity.username";
 	public final static String EXTRA_URL = "org.example.cryptopass.v8.MainActivity.url";
 
-	private PBKDF2AsyncTask activeTask = null;
-
+	private Loader activeLoader;
+	
+	void initLoader() {
+		Object obj = getLastNonConfigurationInstance();
+		if (obj instanceof Loader) {
+			activeLoader = (Loader)obj;
+		}
+		
+		if (activeLoader == null) {
+			activeLoader = new Loader();
+		}
+		
+		activeLoader.onInit(this);
+	}
+	
 	private Button resultButton;
 	private EditText secretEdit;
 	private EditText usernameEdit;
 	private EditText urlEdit;
 
-	private Bookmark argsForKeyGenerated = null;
-
-	private boolean userActive = false;
-	private boolean wasPaused = false;
+	private boolean userInput = true;
+	private boolean userInteractive = false;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState)
@@ -63,20 +74,7 @@ public final class MainActivity extends Activity implements TextWatcher, PBKDF2A
 			}
 		});
 
-		Object obj = getLastNonConfigurationInstance();
-
-		if (obj instanceof PBKDF2AsyncTask)
-		{
-			PBKDF2AsyncTask task = (PBKDF2AsyncTask) obj;
-			activeTask = task;
-			activeTask.activityChanged(this);
-
-			resultButtonWorking();
-		}
-		else
-		{
-			resultButtonEmpty();
-		}
+		initLoader();
 	}
 
 	void resultButtonClicked()
@@ -84,107 +82,81 @@ public final class MainActivity extends Activity implements TextWatcher, PBKDF2A
 		ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 		clipboard.setText(resultButton.getText());
 
-		BookmarksHelper.saveBookmark(this, argsForKeyGenerated.username, argsForKeyGenerated.url);
+		BookmarksHelper.saveBookmark(this, activeLoader.lastBookmark());
 	}
 
 	protected void onDestroy()
 	{
 		super.onDestroy();
-
-		if (activeTask != null)
-		{
-			activeTask.cancel(false);
-		}
+		
+		activeLoader.onActivityDestroy();
 	}
 
 	protected void onPause()
 	{
-		userActive = false;
-		wasPaused = true;
-
+		userInteractive = false;
+		
+		activeLoader.onActivityPause();
+		
 		super.onPause();
-
-		secretEdit.setText(null);
-		resultButtonEmpty();
 	}
 
 	protected void onResume()
 	{
 		super.onResume();
 
-		userActive = true;
+		activeLoader.onActivityResume();
+		
+		userInteractive = true;
 	}
 
 	public Object onRetainNonConfigurationInstance()
 	{
-		if (activeTask != null)
-		{
-			PBKDF2AsyncTask task = activeTask;
-
-			activeTask = null;
-
-			return task;
-		}
-
-		return null;
+		return activeLoader.onActivityGetRetainState();
 	}
 
 	void updateResult(PBKDF2Args args)
-	{
-		argsForKeyGenerated = null;
-
+	{		
+		activeLoader.restart(args);
+	}
+	
+	public void working() {
 		resultButtonWorking();
-
-		if (activeTask == null)
-		{
-			if (!args.isEmpty())
-			{
-				activeTask = new PBKDF2AsyncTask(this, args);
-				activeTask.execute();
-			}
-			else
-			{
-				empty();
-			}
-		}
-		else
-		{
-			activeTask.inputChanged(args);
-		}
-
-		wasPaused = false;
 	}
 
-	public void restart(PBKDF2Args args)
+	public void complete(String result)
 	{
-		activeTask = null;
-		updateResult(args);
+		resultButtonResult(result);
 	}
 
-	public void complete(Bookmark args, String result)
-	{
-		if (!wasPaused)
-		{
+	public void emptySecret() {
+		userInput = false;
+		try {
+			secretEdit.setText(null);
+			resultButtonEmpty();
+		} finally {
+			userInput = true;
+		}
+	}
+	
+	public void restoreSecret(String secret, String result) {
+		userInput = false;
+		try {
+			secretEdit.setText(secret);
 			resultButtonResult(result);
-
-			argsForKeyGenerated = args;
+		} finally {
+			userInput = true;
 		}
-
-		activeTask = null;
 	}
-
+	
 	public void empty()
 	{
 		resultButtonEmpty();
-
-		activeTask = null;
 	}
 
 	public void exception(Exception ex)
 	{
 		resultButtonError(ex.getMessage());
-
-		activeTask = null;
 	}
 
 	void resultButtonWorking()
@@ -225,7 +197,7 @@ public final class MainActivity extends Activity implements TextWatcher, PBKDF2A
 	@Override
 	public void afterTextChanged(Editable s)
 	{
-		if (userActive)
+		if (userInput && userInteractive)
 		{
 			updateResult(getInputs());
 		}

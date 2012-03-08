@@ -20,18 +20,17 @@ public class BookmarksHelper
 		return dbHelper.getReadableDatabase().query(DatabaseHelper.BOOKMARKS_TABLE, columns, null, null, null, null, null);
 	}
 
-	public static void saveBookmark(Context context, String username, String url)
+	public static void saveBookmark(Context context, Bookmark bookmark)
 	{
-		assert url != null;
-		assert username != null;
+		assert bookmark != null;
 		assert context != null;
 		
 		DatabaseHelper dbHelper = new DatabaseHelper(context);
 
 		ContentValues values = new ContentValues();
 
-		values.put(DatabaseHelper.BOOKMARKS_USERNAME, username);
-		values.put(DatabaseHelper.BOOKMARKS_URL, url);
+		values.put(DatabaseHelper.BOOKMARKS_USERNAME, bookmark.username);
+		values.put(DatabaseHelper.BOOKMARKS_URL, bookmark.url);
 
 		dbHelper.getWritableDatabase().insert(DatabaseHelper.BOOKMARKS_TABLE, null, values);
 	}
