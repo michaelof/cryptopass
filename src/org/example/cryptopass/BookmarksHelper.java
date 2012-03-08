@@ -70,4 +70,9 @@ public class BookmarksHelper
 	public static final int USERNAME_COLUMN = 1;
 	public static final int URL_COLUMN = 2;
 
+	public void close()
+	{
+		dbHelper.close();		
+	}
+
 }

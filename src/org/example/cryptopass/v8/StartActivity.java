@@ -51,6 +51,12 @@ public class StartActivity extends ListActivity implements OnItemClickListener {
 			setListAdapter(new BookmarksAdapter(this, bookmarksCursor));
 		}
 	}
+	
+	protected void onDestroy() {
+		helper.close();
+		
+		super.onDestroy();	
+	}
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
