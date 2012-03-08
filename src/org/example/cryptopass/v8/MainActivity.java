@@ -79,10 +79,14 @@ public final class MainActivity extends Activity implements TextWatcher
 
 	void resultButtonClicked()
 	{
-		ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-		clipboard.setText(resultButton.getText());
-
-		BookmarksHelper.saveBookmark(this, activeLoader.lastBookmark());
+		Bookmark bookmark = activeLoader.lastBookmark();
+		
+		if (bookmark != null && !bookmark.isEmpty()) {
+			ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+			clipboard.setText(resultButton.getText());
+	
+			BookmarksHelper.saveBookmark(this, bookmark);
+		}
 	}
 
 	protected void onDestroy()
