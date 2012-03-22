@@ -57,6 +57,14 @@ public class BookmarksHelper
 			c.close();
 		}
 	}
+
+    public static Bookmark getBookmark(final Cursor c, final int position) {
+        if (c.moveToPosition(position)) {
+            return new Bookmark(c.getString(1), c.getString(0));
+        }
+
+        return null;
+    }
 	
 	public void deleteBookmark(long id)
 	{

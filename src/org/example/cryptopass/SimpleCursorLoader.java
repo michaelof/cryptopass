@@ -5,88 +5,88 @@ import android.content.Context;
 import android.database.Cursor;
 
 public abstract class SimpleCursorLoader extends AsyncTaskLoader<Cursor> {
-	final ForceLoadContentObserver mObserver = new ForceLoadContentObserver();
-	private Cursor mLoadedCursor;
+    final ForceLoadContentObserver mObserver = new ForceLoadContentObserver();
+    private Cursor mLoadedCursor;
 
-	public SimpleCursorLoader(Context context) {
-		super(context);
-	}
+    public SimpleCursorLoader(Context context) {
+        super(context);
+    }
 
-	@Override
-	public void deliverResult(Cursor cursor) {
-		if (isReset()) {
-			// An async query came in while the loader is stopped
-			if (cursor != null) {
-				cursor.close();
-			}
-			return;
-		}
-		Cursor oldCursor = mLoadedCursor;
-		mLoadedCursor = cursor;
+    @Override
+    public void deliverResult(Cursor cursor) {
+        if (isReset()) {
+            // An async query came in while the loader is stopped
+            if (cursor != null) {
+                cursor.close();
+            }
+            return;
+        }
+        Cursor oldCursor = mLoadedCursor;
+        mLoadedCursor = cursor;
 
-		if (isStarted()) {
-			super.deliverResult(cursor);
-		}
+        if (isStarted()) {
+            super.deliverResult(cursor);
+        }
 
-		if (oldCursor != null && oldCursor != cursor && !oldCursor.isClosed()) {
-			oldCursor.close();
-		}
-	}
+        if (oldCursor != null && oldCursor != cursor && !oldCursor.isClosed()) {
+            oldCursor.close();
+        }
+    }
 
-	/**
-	 * Starts an asynchronous load of the contacts list data. When the result is ready the callbacks
-	 * will be called on the UI thread. If a previous load has been completed and is still valid
-	 * the result may be passed to the callbacks immediately.
-	 *
-	 * Must be called from the UI thread
-	 */
-	@Override
-	protected void onStartLoading() {
-		if (mLoadedCursor != null) {
-			deliverResult(mLoadedCursor);
-		}
-		if (takeContentChanged() || mLoadedCursor == null) {
-			forceLoad();
-		}
-	}
+    /**
+     * Starts an asynchronous load of the contacts list data. When the result is ready the callbacks
+     * will be called on the UI thread. If a previous load has been completed and is still valid
+     * the result may be passed to the callbacks immediately.
+     *
+     * Must be called from the UI thread
+     */
+    @Override
+    protected void onStartLoading() {
+        if (mLoadedCursor != null) {
+            deliverResult(mLoadedCursor);
+        }
+        if (takeContentChanged() || mLoadedCursor == null) {
+            forceLoad();
+        }
+    }
 
-	protected Cursor onLoadInBackground(){
-		Cursor cursor = super.onLoadInBackground();
-		
-		if (cursor != null) {
-			cursor.getCount();
-			cursor.registerContentObserver(mObserver);
-		}
-		
-		return cursor;
-	}
+    protected Cursor onLoadInBackground(){
+        Cursor cursor = super.onLoadInBackground();
 
-	/**
-	 * Must be called from the UI thread
-	 */
-	@Override
-	protected void onStopLoading() {
-		// Attempt to cancel the current load task if possible.
-		cancelLoad();
-	}
+        if (cursor != null) {
+            cursor.getCount();
+            cursor.registerContentObserver(mObserver);
+        }
 
-	@Override
-	public void onCanceled(Cursor cursor) {
-		if (cursor != null && !cursor.isClosed()) {
-			cursor.close();
-		}
-	}
+        return cursor;
+    }
 
-	@Override
-	protected void onReset() {
-		super.onReset();
+    /**
+     * Must be called from the UI thread
+     */
+    @Override
+    protected void onStopLoading() {
+        // Attempt to cancel the current load task if possible.
+        cancelLoad();
+    }
 
-		// Ensure the loader is stopped
-		onStopLoading();
+    @Override
+    public void onCanceled(Cursor cursor) {
+        if (cursor != null && !cursor.isClosed()) {
+            cursor.close();
+        }
+    }
 
-		if (mLoadedCursor != null && !mLoadedCursor.isClosed()) {
-			mLoadedCursor.close();
-		}
-		mLoadedCursor = null;
-	}
+    @Override
+    protected void onReset() {
+        super.onReset();
+
+        // Ensure the loader is stopped
+        cancelLoad();
+
+        if (mLoadedCursor != null && !mLoadedCursor.isClosed()) {
+            mLoadedCursor.close();
+        }
+        mLoadedCursor = null;
+    }
 }

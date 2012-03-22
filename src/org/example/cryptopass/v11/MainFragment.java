@@ -12,158 +12,216 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import org.example.cryptopass.Bookmark;
+import org.example.cryptopass.BookmarksHelper;
 import org.example.cryptopass.PBKDF2Args;
 import org.example.cryptopass.R;
 
 public class MainFragment extends Fragment implements TextWatcher, IResultHandler, LoaderManager.LoaderCallbacks<GenerateLoaderResult> {
-	private static int RESULT_GENERATE_LOADER = 2;
+    public final static String ARGS_USERNAME = "org.example.cryptopass.v11.MainActivity.username";
+    public final static String ARGS_URL = "org.example.cryptopass.v11.MainActivity.url";
 
-	boolean wasPaused;
+    public static MainFragment instantiate(final Bookmark bookmark) {
+        MainFragment fragment = new MainFragment();
 
-	private Button resultButton;
-	private EditText secretEdit;
-	private EditText usernameEdit;
-	private EditText urlEdit;
+        final Bundle args = new Bundle();
 
-	private Bookmark argsForKeyGenerated = null;
+        args.putString(ARGS_URL, bookmark.url);
+        args.putString(ARGS_USERNAME, bookmark.username);
 
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.main, container, false);
+        fragment.setArguments(args);
 
-		secretEdit = (EditText) view.findViewById(R.id.secretEdit);
-		usernameEdit = (EditText) view.findViewById(R.id.usernameEdit);
-		urlEdit = (EditText) view.findViewById(R.id.urlEdit);
+        return fragment;
+    }
 
-		resultButton = (Button) view.findViewById(R.id.passBtn);
+    public MainFragment() {
+        super();
 
-		secretEdit.addTextChangedListener(this);
-		usernameEdit.addTextChangedListener(this);
-		urlEdit.addTextChangedListener(this);
+        //На самом деле в этом нет необходимости, но из-за некорректной работы Loaderов на
+        //Honeycomb приходится.
+        setRetainInstance(true);
+    }
 
-		resultButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View arg0)
-			{
-				resultButtonClicked();
-			}
-		});
+    boolean wasPaused = false;
 
-		getLoaderManager().initLoader(RESULT_GENERATE_LOADER, null, this);
+    private String secretRestoreValue;
 
-		return view;
-	}
+    private Button resultButton;
+    private EditText secretEdit;
+    private EditText usernameEdit;
+    private EditText urlEdit;
 
-	void resultButtonClicked()
-	{
-	}
+    private Bookmark argsForKeyGenerated = null;
 
-	public void onResume() {
-		super.onResume();
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.main, container, false);
 
-		wasPaused = false;
-	}
+        secretEdit = (EditText) view.findViewById(R.id.secretEdit);
+        usernameEdit = (EditText) view.findViewById(R.id.usernameEdit);
+        urlEdit = (EditText) view.findViewById(R.id.urlEdit);
 
-	public void onPause() {
-		wasPaused = true;
+        resultButton = (Button) view.findViewById(R.id.passBtn);
 
-		super.onPause();
+        if (savedInstanceState == null) {
+            final Bundle args = getArguments();
+            if (args != null) {
+                usernameEdit.setText(args.getString(ARGS_USERNAME));
+                urlEdit.setText(args.getString(ARGS_URL));
+            }
+        }
 
-		secretEdit.setText(null);
+        if (urlEdit.getText().length() == 0) {
+            urlEdit.requestFocus();
+        }
 
-		updateResult();
-	}
+        secretEdit.addTextChangedListener(this);
+        usernameEdit.addTextChangedListener(this);
+        urlEdit.addTextChangedListener(this);
 
-	void updateResult() {
-		argsForKeyGenerated = null;
+        resultButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                resultButtonClicked();
+            }
+        });
 
-		PBKDF2Args args = getInputs();
+        return view;
+    }
 
-		if (args.isEmpty()) {
-			getLoaderManager().destroyLoader(RESULT_GENERATE_LOADER);
-			resultButtonEmpty();
-		} else {
-			GenerateLoader loader = (GenerateLoader) getLoaderManager().initLoader(RESULT_GENERATE_LOADER, null, this);
-			argsForKeyGenerated = null;
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+    }
 
-			resultButtonWorking();
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
-			loader.setArgs(args);
-		}
-	}
+        if (secretRestoreValue != null) {
+            secretEdit.setText(secretRestoreValue);
+            secretRestoreValue = null;
+        }
 
-	PBKDF2Args getInputs() {
-		PBKDF2Args args = new PBKDF2Args();
+        getLoaderManager().initLoader(Loaders.RESULT_GENERATE_LOADER, null, this);
+    }
 
-		args.password = secretEdit.getText().toString();
-		args.username = usernameEdit.getText().toString();
-		args.url = urlEdit.getText().toString();
+    void resultButtonClicked() {
+        BookmarksHelper.saveBookmark(getActivity(), argsForKeyGenerated);
+    }
 
-		return args;
-	}
+    public void onResume() {
+        super.onResume();
+        if (secretRestoreValue != null) {
+            secretEdit.setText(null);
+            getGenerator().clearArgs();
+        }
+        secretRestoreValue = null;
 
-	void resultButtonWorking() {
-		resultButton.setText(R.string.working);
-		resultButton.setEnabled(false);
-	}
+        wasPaused = false;
+    }
 
-	void resultButtonResult(String result) {
-		resultButton.setText(result);
-		resultButton.setEnabled(true);
-	}
+    public void onPause() {
+        wasPaused = true;
 
-	void resultButtonEmpty() {
-		resultButton.setText(R.string.working_secret_empty);
-		resultButton.setEnabled(false);
-	}
+        secretRestoreValue = secretEdit.getText().toString();
 
-	void resultButtonError(String msg) {
-		resultButton.setText(msg);
-		resultButton.setEnabled(false);
-	}
+        super.onPause();
+    }
 
-	@Override
-	public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-	}
+    private GenerateLoader getGenerator() {
+        final LoaderManager loaderManager = getLoaderManager();
 
-	@Override
-	public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-	}
+        return (GenerateLoader) loaderManager.<GenerateLoaderResult>getLoader(Loaders.RESULT_GENERATE_LOADER);
+    }
 
-	@Override
-	public void afterTextChanged(Editable editable) {
-		if (!wasPaused) {
-			updateResult();
-		}
-	}
+    void updateResult() {
+        argsForKeyGenerated = null;
 
-	@Override
-	public Loader<GenerateLoaderResult> onCreateLoader(int id, Bundle bundle) {
-		return new GenerateLoader(getActivity());
-	}
+        PBKDF2Args args = getInputs();
 
-	@Override
-	public void onLoadFinished(Loader<GenerateLoaderResult> generateLoaderResultLoader, GenerateLoaderResult generateLoaderResult) {
-		generateLoaderResult.result(this);
-	}
+        GenerateLoader loader = getGenerator();
 
-	@Override
-	public void onLoaderReset(Loader<GenerateLoaderResult> generateLoaderResultLoader) {
-		resultButtonEmpty();
-	}
+        loader.setArgs(args);
 
-	@Override
-	public void exception(Exception occurredException) {
-		resultButtonError(occurredException.getMessage());
-	}
+        if (args.isEmpty()) {
+            resultButtonEmpty();
+        } else {
+            resultButtonWorking();
+        }
+    }
 
-	@Override
-	public void complete(Bookmark args, String result) {
-		resultButtonResult(result);
+    PBKDF2Args getInputs() {
+        PBKDF2Args args = new PBKDF2Args();
 
-		argsForKeyGenerated = args;
-	}
+        args.password = secretEdit.getText().toString();
+        args.username = usernameEdit.getText().toString();
+        args.url = urlEdit.getText().toString();
 
-	@Override
-	public void empty() {
-	}
+        return args;
+    }
+
+    void resultButtonWorking() {
+        resultButton.setText(R.string.working);
+        resultButton.setEnabled(false);
+    }
+
+    void resultButtonResult(String result) {
+        resultButton.setText(result);
+        resultButton.setEnabled(true);
+    }
+
+    void resultButtonEmpty() {
+        resultButton.setText(R.string.working_secret_empty);
+        resultButton.setEnabled(false);
+    }
+
+    void resultButtonError(String msg) {
+        resultButton.setText(msg);
+        resultButton.setEnabled(false);
+    }
+
+    @Override
+    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+    }
+
+    @Override
+    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+    }
+
+    @Override
+    public void afterTextChanged(Editable editable) {
+        if (!wasPaused) {
+            updateResult();
+        }
+    }
+
+    @Override
+    public Loader<GenerateLoaderResult> onCreateLoader(int id, Bundle bundle) {
+        return new GenerateLoader(getActivity());
+    }
+
+    @Override
+    public void onLoadFinished(Loader<GenerateLoaderResult> generateLoaderResultLoader, GenerateLoaderResult generateLoaderResult) {
+        generateLoaderResult.result(this);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<GenerateLoaderResult> generateLoaderResultLoader) {
+    }
+
+    @Override
+    public void exception(Exception occurredException) {
+        resultButtonError(occurredException.getMessage());
+    }
+
+    @Override
+    public void complete(Bookmark args, String result) {
+        resultButtonResult(result);
+
+        argsForKeyGenerated = args;
+    }
+
+    @Override
+    public void empty() {
+        resultButtonEmpty();
+        argsForKeyGenerated = null;
+    }
 }

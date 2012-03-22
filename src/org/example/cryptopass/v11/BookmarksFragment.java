@@ -6,27 +6,53 @@ import android.content.Context;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
-import org.example.cryptopass.BookmarksAdapter;
-import org.example.cryptopass.BookmarksHelper;
-import org.example.cryptopass.SimpleCursorLoader;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ListView;
+import org.example.cryptopass.*;
 
 public class BookmarksFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	public interface IListener {
 		void noBookmarks();
+
+		void showBookmark(Bookmark bookmark);
 	}
 
-	private static int BOOKMARKS_LOADER = 1;
-
 	private BookmarksAdapter mBookmarksAdapter;
+
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		final View view = super.onCreateView(inflater, container, savedInstanceState);
+
+		final ListView listView = (ListView) view.findViewById(android.R.id.list);
+
+		final View headerView = inflater.inflate(R.layout.row_empty, listView, false);
+
+		listView.addHeaderView(headerView);
+
+		return view;
+	}
 
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
 		mBookmarksAdapter = new BookmarksAdapter(getActivity(), null);
+
+		getLoaderManager().initLoader(Loaders.BOOKMARKS_LOADER, null, this);
+
 		setListAdapter(mBookmarksAdapter);
 		setListShown(false);
+	}
 
-		getLoaderManager().initLoader(BOOKMARKS_LOADER, null, this);
+	public void onListItemClick(final ListView listView, final View rowView, final int position, final long id) {
+		Cursor cursor = mBookmarksAdapter.getCursor();
+		
+		Bookmark bookmark = BookmarksHelper.getBookmark(cursor, position - 1);
+		if (bookmark != null) {
+			getListener().showBookmark(bookmark);
+		}
+
+		super.onListItemClick(listView, rowView, position, id);
 	}
 
 	static class BookmarkLoader extends SimpleCursorLoader {

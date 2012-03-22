@@ -10,121 +10,124 @@ import org.example.cryptopass.PasswordMaker;
 
 class GenerateLoader extends Loader<GenerateLoaderResult> implements IIterationsListener {
 
-	static class SuccessResult extends GenerateLoaderResult {
-		private final Bookmark args;
-		private final String result;
+    static class SuccessResult extends GenerateLoaderResult {
+        private final Bookmark args;
+        private final String result;
 
-		public SuccessResult(Bookmark a, String res) {
-			args = a;
-			result = res;
-		}
+        public SuccessResult(Bookmark a, String res) {
+            args = a;
+            result = res;
+        }
 
-		void result(IResultHandler handler) {
-			handler.complete(args, result);
-		}
-	}
+        void result(IResultHandler handler) {
+            handler.complete(args, result);
+        }
+    }
 
-	static class ExceptionResult extends GenerateLoaderResult {
-		private final Exception exception;
+    static class ExceptionResult extends GenerateLoaderResult {
+        private final Exception exception;
 
-		public ExceptionResult(Exception ex) {
-			exception = ex;
-		}
+        public ExceptionResult(Exception ex) {
+            exception = ex;
+        }
 
-		void result(IResultHandler handler) {
-			handler.exception(exception);
-		}
-	}
+        void result(IResultHandler handler) {
+            handler.exception(exception);
+        }
+    }
 
-	private PBKDF2Args mChangedArgs;
-	private GenerateTask mActiveTask;
+    static class EmptyResult extends GenerateLoaderResult {
+        void result(IResultHandler handler) {
+            handler.empty();
+        }
+    }
 
-	public GenerateLoader(Context context) {
-		super(context);
+    private PBKDF2Args mChangedArgs;
+    private GenerateTask mActiveTask;
 
-		mChangedArgs = null;
-	}
+    public GenerateLoader(Context context) {
+        super(context);
 
-	protected void onAbandon() {
-		super.onAbandon();
+        mChangedArgs = null;
+    }
 
-		if (mActiveTask != null) {
-			mActiveTask.cancel(false);
-		}
-	}
+    protected void onForceLoad() {
+        if (mActiveTask == null) {
+            mActiveTask = new GenerateTask();
+            mActiveTask.executeOnExecutor(GenerateTask.THREAD_POOL_EXECUTOR);
+        }
+    }
 
-	protected void onReset() {
-		super.onReset();
+    class GenerateTask extends AsyncTask<Void, Void, GenerateLoaderResult> {
 
-	}
+        @Override
+        protected GenerateLoaderResult doInBackground(Void... voids) {
+            try {
+                GenerateLoaderResult result = null;
 
-	protected void onForceLoad() {
-		if (mActiveTask == null) {
-			mActiveTask = new GenerateTask();
-			mActiveTask.executeOnExecutor(GenerateTask.THREAD_POOL_EXECUTOR);
-		}
-	}
+                while (result == null && !isCancelled()) {
+                    PBKDF2Args args = mChangedArgs;
+                    mChangedArgs = null;
 
-	class GenerateTask extends AsyncTask<Void, Void, GenerateLoaderResult> {
+                    if (args.isEmpty()) {
+                        result = new EmptyResult();
+                    } else {
+                        result = make(args);
+                    }
+                }
 
-		@Override
-		protected GenerateLoaderResult doInBackground(Void... voids) {
-			try {
-				GenerateLoaderResult result = null;
+                return result;
+            } catch (Exception e) {
+                return new ExceptionResult(e);
+            }
+        }
 
-				while (result == null && !isCancelled()) {
-					PBKDF2Args args = mChangedArgs;
-					mChangedArgs = null;
+        protected void onPostExecute(GenerateLoaderResult result) {
+            mActiveTask = null;
+            if (mChangedArgs == null) {
+                deliverResult(result);
+            } else {
+                forceLoad();
+            }
+        }
+    }
 
-					result = make(args);
-				}
+    public void clearArgs() {
+        setArgs(new PBKDF2Args());
+    }
 
-				return result;
-			} catch (Exception e) {
-				return new ExceptionResult(e);
-			}
-		}
+    public void setArgs(PBKDF2Args args) {
+        mChangedArgs = args;
+        deliverResult(new EmptyResult());
+        if (mChangedArgs.isEmpty()) {
+            deliverResult(new EmptyResult());
+        } else {
+            forceLoad();
+        }
+    }
 
-		protected void onPostExecute(GenerateLoaderResult result) {
-			mActiveTask = null;
-			if (mChangedArgs == null)
-			{
-				deliverResult(result);
-			}
-			else
-			{
-				forceLoad();
-			}
-		}
-	}
+    GenerateLoaderResult make(PBKDF2Args args) throws Exception {
+        String secret = args.password;
+        String username = args.username;
+        String url = args.url;
 
-	public void setArgs(PBKDF2Args args) {
-		mChangedArgs = args;
-		forceLoad();
-	}
+        String result = PasswordMaker.make(this, secret, username, url, 25);
 
-	GenerateLoaderResult make(PBKDF2Args args) throws Exception {
-		String secret = args.password;
-		String username = args.username;
-		String url = args.url;
+        if (result != null) {
+            Bookmark bookmark = new Bookmark(url, username);
 
-		String result = PasswordMaker.make(this, secret, username, url, 25);
+            return new SuccessResult(bookmark, result);
+        }
 
-		if (result != null) {
-			Bookmark bookmark = new Bookmark(url, username);
+        return null;
+    }
 
-			return new SuccessResult(bookmark, result);
-		}
+    @Override
+    public boolean afterIteration() {
+        if (isAbandoned()) {
+            return false;
+        }
 
-		return null;
-	}
-
-	@Override
-	public boolean afterIteration() {
-		if (isReset()) {
-			return false;
-		}
-
-		return mChangedArgs == null;
-	}
+        return mChangedArgs == null;
+    }
 }
