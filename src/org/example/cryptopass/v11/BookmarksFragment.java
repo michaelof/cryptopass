@@ -33,6 +33,13 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
 		return view;
 	}
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        getActivity().getActionBar().setDisplayHomeAsUpEnabled(false);
+    }
+
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
 
@@ -47,10 +54,12 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
 	public void onListItemClick(final ListView listView, final View rowView, final int position, final long id) {
 		Cursor cursor = mBookmarksAdapter.getCursor();
 		
-		Bookmark bookmark = BookmarksHelper.getBookmark(cursor, position - 1);
-		if (bookmark != null) {
-			getListener().showBookmark(bookmark);
-		}
+		Bookmark bookmark = null;
+        if (position > 0) {
+            bookmark = BookmarksHelper.getBookmark(cursor, position - 1);
+        }
+
+		getListener().showBookmark(bookmark);
 
 		super.onListItemClick(listView, rowView, position, id);
 	}

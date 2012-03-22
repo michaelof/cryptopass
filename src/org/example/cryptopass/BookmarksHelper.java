@@ -60,7 +60,7 @@ public class BookmarksHelper
 
     public static Bookmark getBookmark(final Cursor c, final int position) {
         if (c.moveToPosition(position)) {
-            return new Bookmark(c.getString(1), c.getString(0));
+            return new Bookmark(c.getString(URL_COLUMN), c.getString(USERNAME_COLUMN));
         }
 
         return null;

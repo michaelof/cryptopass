@@ -23,12 +23,14 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
     public static MainFragment instantiate(final Bookmark bookmark) {
         MainFragment fragment = new MainFragment();
 
-        final Bundle args = new Bundle();
+        if (bookmark != null) {
+            final Bundle args = new Bundle();
 
-        args.putString(ARGS_URL, bookmark.url);
-        args.putString(ARGS_USERNAME, bookmark.username);
+            args.putString(ARGS_URL, bookmark.url);
+            args.putString(ARGS_USERNAME, bookmark.username);
 
-        fragment.setArguments(args);
+            fragment.setArguments(args);
+        }
 
         return fragment;
     }
@@ -88,8 +90,10 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
     }
 
     @Override
-    public void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
+    public void onStart() {
+        super.onStart();
+
+        getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     public void onActivityCreated(Bundle savedInstanceState) {

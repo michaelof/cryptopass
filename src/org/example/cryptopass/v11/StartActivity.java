@@ -14,6 +14,7 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
 	
 	private static final String BOOKMARKS_TAG = "bookmarks";
 	private static final String MAIN_TAG = "main";
+    
 	@Override
 	public void onCreate(Bundle savedInstanceState)
 	{
@@ -34,22 +35,14 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
 		}
 	}
 
-	void showHome() {
-		final FragmentManager fragmentManager = getFragmentManager();
-		Fragment bookmarksFragment = fragmentManager.findFragmentByTag(BOOKMARKS_TAG);
-		if (bookmarksFragment == null) {
-			fragmentManager.beginTransaction().replace(R.id.rootView, new BookmarksFragment(), BOOKMARKS_TAG).commit();
-		} else {
-			fragmentManager.popBackStack();
-		}
-	}
-
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch (item.getItemId()) {
 			case android.R.id.home:
 				// app icon in action bar clicked; go home
-				showHome();
+                Intent intent = new Intent(this, StartActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
 
 				return true;
 			default:
@@ -61,14 +54,14 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
 	public void noBookmarks() {
 		Intent intent = new Intent(this, StartActivity.class);
 		intent.putExtra(FIRST_START, true);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		startActivity(intent);
-		finish();
 	}
 
 	@Override
 	public void showBookmark(Bookmark bookmark) {
 		final MainFragment fragment = MainFragment.instantiate(bookmark);
 		
-		getFragmentManager().beginTransaction().add(R.id.rootView, fragment, MAIN_TAG).addToBackStack(null).commit();
+		getFragmentManager().beginTransaction().replace(R.id.rootView, fragment, MAIN_TAG).addToBackStack(null).commit();
 	}
 }
