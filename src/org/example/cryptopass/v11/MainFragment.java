@@ -2,6 +2,9 @@ package org.example.cryptopass.v11;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
 import android.content.Loader;
 import android.os.Bundle;
 import android.text.Editable;
@@ -108,6 +111,9 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
     }
 
     void resultButtonClicked() {
+        ClipboardManager clipboardManager = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+        clipboardManager.setPrimaryClip(ClipData.newPlainText("generated", resultButton.getText().toString()));
+        
         BookmarksHelper.saveBookmark(getActivity(), argsForKeyGenerated);
     }
 
