@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">CryptoPass</string>
+
     <string name="working">Working...</string>
     <string name="working_secret_empty">Secret is empty</string>
+    <string name="result">%s\ntap to copy</string>
     
     <string name="secret_hint">Secret</string>
     <string name="username_hint">Username</string>

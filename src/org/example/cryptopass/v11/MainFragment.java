@@ -7,8 +7,8 @@ import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Loader;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.text.*;
+import android.text.style.TextAppearanceSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -55,6 +55,8 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
     private EditText usernameEdit;
     private EditText urlEdit;
 
+    private TextAppearanceSpan subTitleAppearance;
+
     private Bookmark argsForKeyGenerated = null;
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -65,6 +67,8 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
         urlEdit = (EditText) view.findViewById(R.id.urlEdit);
 
         resultButton = (Button) view.findViewById(R.id.passBtn);
+
+        subTitleAppearance = new TextAppearanceSpan(inflater.getContext(), android.R.style.TextAppearance_Small);
 
         if (savedInstanceState == null) {
             final Bundle args = getArguments();
@@ -174,7 +178,15 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
     }
 
     void resultButtonResult(String result) {
-        resultButton.setText(result);
+        String str = getString(R.string.result, result);
+        
+        final int start = str.indexOf("\n");
+        final int end = str.length();
+        
+        SpannableString span = new SpannableString(str);
+        span.setSpan(subTitleAppearance, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        
+        resultButton.setText(span);
         resultButton.setEnabled(true);
     }
 
