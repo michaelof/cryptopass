@@ -8,23 +8,23 @@
 
     <Button android:id="@+id/passBtn"
             android:enabled="false"
-            android:text="Secret is empty"
+            android:text="@string/working_secret_empty"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"/>
 
     <EditText android:id="@+id/secretEdit"
-              android:hint="Secret"
+              android:hint="@string/secret_hint"
               android:password="true"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"/>
 
     <EditText android:id="@+id/usernameEdit"
-              android:hint="Username"
+              android:hint="@string/username_hint"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"/>
 
     <EditText android:id="@+id/urlEdit"
-              android:hint="URL"
+              android:hint="@string/url_hint"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"/>
 

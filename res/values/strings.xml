@@ -2,4 +2,15 @@
     <string name="app_name">CryptoPass</string>
     <string name="working">Working...</string>
     <string name="working_secret_empty">Secret is empty</string>
+    
+    <string name="secret_hint">Secret</string>
+    <string name="username_hint">Username</string>
+    <string name="url_hint">URL</string>
+    
+    <string name="empty_row_title">Empty</string>
+    
+    <string name="open">Open</string>
+    <string name="delete">Delete</string>
+    
+    <string name="selected">Selected: %d</string>
 </resources>

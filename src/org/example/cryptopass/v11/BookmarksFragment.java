@@ -1,17 +1,21 @@
 package org.example.cryptopass.v11;
 
+import android.app.ActionBar;
 import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.Context;
 import android.content.Loader;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.util.SparseBooleanArray;
 import android.view.*;
 import android.widget.AbsListView;
 import android.widget.ListView;
 import org.example.cryptopass.*;
 
 public class BookmarksFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
+    private static final int INVALID_ID = -1;
+    
     public interface IListener {
         void noBookmarks();
 
@@ -36,7 +40,11 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
     public void onStart() {
         super.onStart();
 
-        getActivity().getActionBar().setDisplayHomeAsUpEnabled(false);
+        getLoaderManager().getLoader(Loaders.BOOKMARKS_LOADER).onContentChanged();
+
+        final ActionBar actionBar = getActivity().getActionBar();
+
+        actionBar.setDisplayHomeAsUpEnabled(false);
     }
 
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -58,7 +66,7 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
     private final AbsListView.MultiChoiceModeListener mMultiChoiceModeListener = new AbsListView.MultiChoiceModeListener() {
         @Override
         public void onItemCheckedStateChanged(final ActionMode actionMode, final int position, final long id, final boolean checked) {
-            if (position == 0 && checked) {
+            if (INVALID_ID == id && checked) {
                 //prevent header item selection
                 getListView().setItemChecked(0, false);
             } else {
@@ -66,7 +74,7 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
 
                 actionMode.getMenu().findItem(R.id.open).setEnabled(count == 1);
 
-                actionMode.setTitle("Selected " + count);
+                actionMode.setTitle(getString(R.string.selected, count));
             }
         }
 
@@ -86,6 +94,18 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
 
         @Override
         public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
+            switch (menuItem.getItemId()) {
+                case R.id.open:
+                    final SparseBooleanArray array = getListView().getCheckedItemPositions();
+
+                    final int listPosition = array.keyAt(array.indexOfValue(true));
+
+                    showBookmark(listPosition);
+                    
+                    actionMode.finish();
+                    
+                    return true;
+            }
             return false;
         }
 
@@ -93,18 +113,20 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
         public void onDestroyActionMode(ActionMode actionMode) {
         }
     };
-
-    public void onListItemClick(final ListView listView, final View rowView, final int position, final long id) {
+    
+    private void showBookmark(final int listPosition) {
         Cursor cursor = mBookmarksAdapter.getCursor();
 
         Bookmark bookmark = null;
-        if (position > 0) {
-            bookmark = BookmarksHelper.getBookmark(cursor, position - 1);
+        if (listPosition > 0) {
+            bookmark = BookmarksHelper.getBookmark(cursor, listPosition - 1);
         }
 
         getListener().showBookmark(bookmark);
+    }
 
-        super.onListItemClick(listView, rowView, position, id);
+    public void onListItemClick(final ListView listView, final View rowView, final int position, final long id) {
+        showBookmark(position);
     }
 
     static class BookmarkLoader extends SimpleCursorLoader {
