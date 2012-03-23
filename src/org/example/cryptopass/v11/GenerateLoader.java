@@ -98,8 +98,8 @@ class GenerateLoader extends Loader<GenerateLoaderResult> implements IIterations
 
     public void setArgs(PBKDF2Args args) {
         mChangedArgs = args;
-        deliverResult(new EmptyResult());
-        if (mChangedArgs.isEmpty()) {
+
+        if (args.isEmpty()) {
             deliverResult(new EmptyResult());
         } else {
             forceLoad();

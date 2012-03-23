@@ -115,9 +115,10 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
     }
 
     void resultButtonClicked() {
-        ClipboardManager clipboardManager = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-        clipboardManager.setPrimaryClip(ClipData.newPlainText("generated", resultButton.getText().toString()));
-        
+        if (activeResult != null) {
+            ClipboardManager clipboardManager = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboardManager.setPrimaryClip(ClipData.newPlainText("generated", activeResult));
+        }
         BookmarksHelper.saveBookmark(getActivity(), argsForKeyGenerated);
     }
 
@@ -172,12 +173,16 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
         return args;
     }
 
+    private String activeResult;
+    
     void resultButtonWorking() {
+        activeResult = null;
         resultButton.setText(R.string.working);
         resultButton.setEnabled(false);
     }
 
     void resultButtonResult(String result) {
+        activeResult = result;
         String str = getString(R.string.result, result);
         
         final int start = str.indexOf("\n");
@@ -191,11 +196,13 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
     }
 
     void resultButtonEmpty() {
+        activeResult = null;
         resultButton.setText(R.string.working_secret_empty);
         resultButton.setEnabled(false);
     }
 
     void resultButtonError(String msg) {
+        activeResult = null;
         resultButton.setText(msg);
         resultButton.setEnabled(false);
     }
