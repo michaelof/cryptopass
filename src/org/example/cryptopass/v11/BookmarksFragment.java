@@ -40,6 +40,10 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
     public void onStart() {
         super.onStart();
 
+        if (Version.isHoneycomb()) {
+            setRetainInstance(true);
+        }
+
         getLoaderManager().getLoader(Loaders.BOOKMARKS_LOADER).onContentChanged();
 
         final ActionBar actionBar = getActivity().getActionBar();
@@ -70,11 +74,7 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
                 //prevent header item selection
                 getListView().setItemChecked(0, false);
             } else {
-                final int count = getListView().getCheckedItemCount();
-
-                actionMode.getMenu().findItem(R.id.open).setEnabled(count == 1);
-
-                actionMode.setTitle(getString(R.string.selected, count));
+                actionMode.invalidate();
             }
         }
 
@@ -89,7 +89,13 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
 
         @Override
         public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
-            return false;
+            final int count = getListView().getCheckedItemCount();
+
+            actionMode.getMenu().findItem(R.id.open).setEnabled(count == 1);
+
+            actionMode.setTitle(getString(R.string.selected, count));
+
+            return true;
         }
 
         @Override
