@@ -48,8 +48,6 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
 
     boolean wasPaused = false;
 
-    private String secretRestoreValue;
-
     private Button resultButton;
     private EditText secretEdit;
     private EditText usernameEdit;
