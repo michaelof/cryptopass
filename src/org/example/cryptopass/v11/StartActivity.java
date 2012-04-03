@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.MenuItem;
+import android.view.WindowManager;
 import org.example.cryptopass.Bookmark;
 import org.example.cryptopass.R;
 
@@ -19,6 +20,8 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
 		super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.start);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
 
 		if (savedInstanceState == null) {
 			Intent intent = getIntent();

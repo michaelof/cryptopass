@@ -96,6 +96,7 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
         return view;
     }
 
+
     @Override
     public void onStart() {
         super.onStart();
@@ -105,11 +106,6 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
 
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
-        if (secretRestoreValue != null) {
-            secretEdit.setText(secretRestoreValue);
-            secretRestoreValue = null;
-        }
 
         getLoaderManager().initLoader(Loaders.RESULT_GENERATE_LOADER, null, this);
     }
@@ -124,11 +120,6 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
 
     public void onResume() {
         super.onResume();
-        if (secretRestoreValue != null) {
-            secretEdit.setText(null);
-            getGenerator().clearArgs();
-        }
-        secretRestoreValue = null;
 
         wasPaused = false;
     }
@@ -136,7 +127,8 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
     public void onPause() {
         wasPaused = true;
 
-        secretRestoreValue = secretEdit.getText().toString();
+        secretEdit.setText(null);
+        getGenerator().clearArgs();
 
         super.onPause();
     }
