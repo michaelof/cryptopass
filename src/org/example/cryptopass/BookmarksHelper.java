@@ -17,7 +17,7 @@ public class BookmarksHelper
 	{
 		String[] columns = new String[] { DatabaseHelper.BOOKMARKS_ID, DatabaseHelper.BOOKMARKS_USERNAME, DatabaseHelper.BOOKMARKS_URL };
 
-		return dbHelper.getReadableDatabase().query(DatabaseHelper.BOOKMARKS_TABLE, columns, null, null, null, null, null);
+		return dbHelper.getReadableDatabase().query(DatabaseHelper.BOOKMARKS_TABLE, columns, null, null, null, null, "_ID DESC");
 	}
 
 	public static void saveBookmark(Context context, Bookmark bookmark)

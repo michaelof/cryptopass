@@ -4,11 +4,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.ClipboardManager;
-import android.text.Editable;
-import android.text.TextWatcher;
+import android.text.*;
+import android.text.style.TextAppearanceSpan;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import org.example.cryptopass.*;
@@ -38,6 +38,8 @@ public final class MainActivity extends Activity implements TextWatcher
 	private EditText usernameEdit;
 	private EditText urlEdit;
 
+    private TextAppearanceSpan subTitleAppearance;
+
 	private boolean userInput = true;
 	private boolean userInteractive = false;
 
@@ -45,7 +47,12 @@ public final class MainActivity extends Activity implements TextWatcher
 	public void onCreate(Bundle savedInstanceState)
 	{
 		super.onCreate(savedInstanceState);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+
 		setContentView(R.layout.main);
+
+        subTitleAppearance = new TextAppearanceSpan(this, android.R.style.TextAppearance_Small);
 
 		secretEdit = (EditText) findViewById(R.id.secretEdit);
 		usernameEdit = (EditText) findViewById(R.id.usernameEdit);
@@ -171,8 +178,16 @@ public final class MainActivity extends Activity implements TextWatcher
 
 	void resultButtonResult(String result)
 	{
-		resultButton.setText(result);
-		resultButton.setEnabled(true);
+        String str = getString(R.string.result, result);
+
+        final int start = str.indexOf("\n");
+        final int end = str.length();
+
+        SpannableString span = new SpannableString(str);
+        span.setSpan(subTitleAppearance, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        resultButton.setText(span);
+        resultButton.setEnabled(true);
 	}
 
 	void resultButtonEmpty()
