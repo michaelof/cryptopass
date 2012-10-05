@@ -10,9 +10,6 @@ public class DatabaseHelper extends SQLiteOpenHelper
 	private static final int DATABASE_VERSION = 1;
 
 	public static final String BOOKMARKS_TABLE = "bookmarks";
-	public static final String BOOKMARKS_ID = "_id";
-	public static final String BOOKMARKS_USERNAME = "username";
-	public static final String BOOKMARKS_URL = "url";
 
 	DatabaseHelper(Context context)
 	{

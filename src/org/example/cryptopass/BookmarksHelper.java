@@ -3,84 +3,44 @@ package org.example.cryptopass;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.net.Uri;
 
-public class BookmarksHelper
-{
+public class BookmarksHelper {
 	private final DatabaseHelper dbHelper;
 
-	public BookmarksHelper(Context context)
-	{
+	public BookmarksHelper(Context context) {
 		dbHelper = new DatabaseHelper(context);
 	}
 
-	public Cursor queryBookmarks()
-	{
-		String[] columns = new String[] { DatabaseHelper.BOOKMARKS_ID, DatabaseHelper.BOOKMARKS_USERNAME, DatabaseHelper.BOOKMARKS_URL };
-
+	public Cursor queryBookmarks(String[] columns) {
 		return dbHelper.getReadableDatabase().query(DatabaseHelper.BOOKMARKS_TABLE, columns, null, null, null, null, "_ID DESC");
 	}
 
-	public static void saveBookmark(Context context, Bookmark bookmark)
-	{
-		assert bookmark != null;
-		assert context != null;
-		
-		DatabaseHelper dbHelper = new DatabaseHelper(context);
-
+	public void saveBookmark(String username, String url) {
 		ContentValues values = new ContentValues();
 
-		values.put(DatabaseHelper.BOOKMARKS_USERNAME, bookmark.username);
-		values.put(DatabaseHelper.BOOKMARKS_URL, bookmark.url);
+		values.put(Data.BOOKMARKS_USERNAME, username != null ? username : "");
+		values.put(Data.BOOKMARKS_URL, url != null ? url : "");
 
 		dbHelper.getWritableDatabase().insert(DatabaseHelper.BOOKMARKS_TABLE, null, values);
 	}
 
-	public Bookmark getBookmark(long id)
-	{
-		String[] columns = new String[] { DatabaseHelper.BOOKMARKS_USERNAME, DatabaseHelper.BOOKMARKS_URL };
-		String selection = DatabaseHelper.BOOKMARKS_ID + " = ?";
-		String[] selectionArgs = new String[] { Long.toString(id) };
-		
-		Cursor c = dbHelper.getReadableDatabase()
-				.query(DatabaseHelper.BOOKMARKS_TABLE, columns, selection, selectionArgs, null, null, null);
-		try
-		{
-			if (c.moveToFirst())
-			{
-				return new Bookmark(c.getString(1), c.getString(0));
-			}
+	public static Uri getBookmarkUri(final Cursor c, final int position) {
+		if (c.moveToPosition(position)) {
+			return Data.makeBookmarkUri(c.getString(Data.USERNAME_COLUMN), c.getString(Data.URL_COLUMN));
+		}
 
-			return null;
-		}
-		finally
-		{
-			c.close();
-		}
+		return null;
 	}
 
-    public static Bookmark getBookmark(final Cursor c, final int position) {
-        if (c.moveToPosition(position)) {
-            return new Bookmark(c.getString(URL_COLUMN), c.getString(USERNAME_COLUMN));
-        }
+	public int deleteBookmark(String username, String url) {
+		assert username != null;
+		assert url != null;
 
-        return null;
-    }
-	
-	public void deleteBookmark(long id)
-	{
-		String whereClause = DatabaseHelper.BOOKMARKS_ID + " = ?";
-		String[] whereArgs = new String[] { Long.toString(id) };
+		String whereClause = Data.BOOKMARKS_USERNAME + " = ? AND " + Data.BOOKMARKS_URL + " = ?";
+		String[] whereArgs = new String[]{username, url};
 
-		dbHelper.getWritableDatabase().delete(DatabaseHelper.BOOKMARKS_TABLE, whereClause, whereArgs);		
-	}
-
-	public static final int ID_COLUMN = 0;
-	public static final int USERNAME_COLUMN = 1;
-	public static final int URL_COLUMN = 2;
-
-	public void close()
-	{
-		dbHelper.close();		
+		return dbHelper.getWritableDatabase().delete(DatabaseHelper.BOOKMARKS_TABLE, whereClause, whereArgs);
 	}
 
 }

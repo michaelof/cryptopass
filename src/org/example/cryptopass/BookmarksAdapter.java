@@ -15,8 +15,8 @@ public class BookmarksAdapter extends ResourceCursorAdapter {
 	public void bindView(View view, Context context, Cursor cursor) {
 		TextView tv = (TextView) view;
 
-		String url = cursor.getString(BookmarksHelper.URL_COLUMN);
-		String username = cursor.getString(BookmarksHelper.USERNAME_COLUMN);
+		String url = cursor.getString(Data.URL_COLUMN);
+		String username = cursor.getString(Data.USERNAME_COLUMN);
 
 		String text = String.format("%s @ %s", username, url);
 

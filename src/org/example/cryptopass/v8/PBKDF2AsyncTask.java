@@ -81,11 +81,6 @@ public class PBKDF2AsyncTask extends AsyncTask<Void, Void, PBKDF2AsyncTaskResult
 		changedGenerateArgs = args;
 	}
 
-	public void activityChanged(ResultListener mainActivity)
-	{
-		this.resultListener = mainActivity;
-	}
-
 	private PBKDF2AsyncTaskResult make(PBKDF2Args args) throws Exception
 	{
 		String password = args.password;

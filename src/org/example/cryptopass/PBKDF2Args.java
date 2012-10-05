@@ -27,26 +27,6 @@ public final class PBKDF2Args
 		return password == null || password.length() == 0;
 	}
 
-	public boolean equals(PBKDF2Args args)
-	{
-		if (password != args.password)
-		{
-			return false;
-		}
-
-		if (url != args.url)
-		{
-			return false;
-		}
-
-		if (username != args.username)
-		{
-			return false;
-		}
-
-		return true;
-	}
-	
 	public String toString() {
 		if (TextUtils.isEmpty(password)) {
 			return String.format("PBKDF2Args: %1$s @ %2$s", username, url);

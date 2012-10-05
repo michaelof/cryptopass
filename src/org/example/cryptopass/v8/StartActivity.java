@@ -2,26 +2,26 @@ package org.example.cryptopass.v8;
 
 import android.app.ListActivity;
 import android.content.Intent;
+import android.database.ContentObserver;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TextView;
-import org.example.cryptopass.Bookmark;
-import org.example.cryptopass.BookmarksAdapter;
-import org.example.cryptopass.BookmarksHelper;
-import org.example.cryptopass.R;
+import org.example.cryptopass.*;
 
-public class StartActivity extends ListActivity implements OnItemClickListener {
+public class StartActivity extends ListActivity implements OnItemClickListener, OperationManager.OperationListener {
 	private static final int INVALID_ID = -1;
 
-	private BookmarksHelper helper;
 	private Cursor bookmarksCursor;
 
 	/**
@@ -29,11 +29,14 @@ public class StartActivity extends ListActivity implements OnItemClickListener {
 	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+
 		super.onCreate(savedInstanceState);
 
-		helper = new BookmarksHelper(this);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
-		bookmarksCursor = helper.queryBookmarks();
+		setProgressBarIndeterminateVisibility(false);
+
+		bookmarksCursor = getContentResolver().query(Data.URI_BOOKMARKS, Data.BOOKMARKS_PROJECTION, null, null, null);
 		startManagingCursor(bookmarksCursor);
 
 		if (bookmarksCursor.getCount() == 0) {
@@ -51,17 +54,43 @@ public class StartActivity extends ListActivity implements OnItemClickListener {
 			setListAdapter(new BookmarksAdapter(this, bookmarksCursor));
 		}
 	}
-	
+
+	private final ContentObserver mBookmarksObserver = new ContentObserver(new Handler()) {
+		@Override
+		public void onChange(boolean selfChange) {
+			if (bookmarksCursor != null && !bookmarksCursor.isClosed()) {
+				bookmarksCursor.requery();
+			}
+		}
+	};
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+
+		OperationManager.getInstance().subscribe(this);
+		getContentResolver().registerContentObserver(Data.URI_BOOKMARKS, false, mBookmarksObserver);
+	}
+
+	@Override
+	protected void onPause() {
+		super.onPause();
+
+		getContentResolver().unregisterContentObserver(mBookmarksObserver);
+		OperationManager.getInstance().unsubscribe(this);
+	}
+
+	@Override
 	protected void onDestroy() {
-		helper.close();
-		
-		super.onDestroy();	
+		super.onDestroy();
+
+		bookmarksCursor = null;
 	}
 
 	@Override
 	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 		if (INVALID_ID != id) {
-			startMainBookmark(id);
+			startMainBookmark(position);
 		} else {
 			startMainEmpty();
 		}
@@ -71,14 +100,21 @@ public class StartActivity extends ListActivity implements OnItemClickListener {
 		startActivity(new Intent(StartActivity.this, MainActivity.class));
 	}
 
-	void startMainBookmark(long id) {
-		Bookmark bookmark = helper.getBookmark(id);
 
-		Intent intent = new Intent(this, MainActivity.class);
-		intent.putExtra(MainActivity.EXTRA_URL, bookmark.url);
-		intent.putExtra(MainActivity.EXTRA_USERNAME, bookmark.username);
+	void startMainBookmark(final int listPosition) {
+		if (listPosition > 0) {
+			Intent intent = new Intent(Data.ACTION_SHOW, BookmarksHelper.getBookmarkUri(bookmarksCursor, listPosition - 1));
 
-		startActivity(intent);
+			startActivity(intent);
+		}
+	}
+
+	private void deleteBookmark(final int listPosition) {
+		if (listPosition > 0) {
+			Intent intent = new Intent(Data.ACTION_DELETE, BookmarksHelper.getBookmarkUri(bookmarksCursor, listPosition - 1));
+
+			startService(intent);
+		}
 	}
 
 	@Override
@@ -106,19 +142,38 @@ public class StartActivity extends ListActivity implements OnItemClickListener {
 		if (INVALID_ID != menuInfo.id) {
 			switch (item.getItemId()) {
 				case R.id.open:
-					startMainBookmark(menuInfo.id);
+					startMainBookmark(menuInfo.position);
 
 					return true;
 
 				case R.id.delete:
-					helper.deleteBookmark(menuInfo.id);
-
-					bookmarksCursor.requery();
+					deleteBookmark(menuInfo.position);
 
 					return true;
 			}
 		}
 
 		return super.onContextItemSelected(item);
+	}
+
+	private final Handler mHandler = new Handler();
+
+	private final Runnable mUpdateProgressRunnable = new Runnable() {
+		@Override
+		public void run() {
+			setProgressBarIndeterminateVisibility(OperationManager.getInstance().isInOperation());
+		}
+	};
+
+	@Override
+	public void onOperationStarted(Uri uri) {
+		mHandler.removeCallbacks(mUpdateProgressRunnable);
+		mHandler.post(mUpdateProgressRunnable);
+	}
+
+	@Override
+	public void onOperationEnded(Uri uri) {
+		mHandler.removeCallbacks(mUpdateProgressRunnable);
+		mHandler.post(mUpdateProgressRunnable);
 	}
 }

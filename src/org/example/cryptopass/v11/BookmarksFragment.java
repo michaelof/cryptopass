@@ -4,8 +4,12 @@ import android.app.ActionBar;
 import android.app.ListFragment;
 import android.app.LoaderManager;
 import android.content.Context;
+import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
+import android.database.ContentObserver;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.SparseBooleanArray;
 import android.view.*;
@@ -14,162 +18,210 @@ import android.widget.ListView;
 import org.example.cryptopass.*;
 
 public class BookmarksFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
-    private static final int INVALID_ID = -1;
-    
-    public interface IListener {
-        void noBookmarks();
+	private static final int INVALID_ID = -1;
 
-        void showBookmark(Bookmark bookmark);
-    }
+	public interface IListener {
+		void noBookmarks();
 
-    private BookmarksAdapter mBookmarksAdapter;
+		void showBookmark(Uri data);
+	}
 
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        final View view = super.onCreateView(inflater, container, savedInstanceState);
+	private BookmarksAdapter mBookmarksAdapter;
 
-        final ListView listView = (ListView) view.findViewById(android.R.id.list);
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
 
-        final View headerView = inflater.inflate(R.layout.row_empty, listView, false);
+		mBookmarksAdapter = new BookmarksAdapter(getActivity(), null);
 
-        listView.addHeaderView(headerView);
+		getLoaderManager().initLoader(Loaders.BOOKMARKS_LOADER, null, this);
+	}
 
-        return view;
-    }
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		final View view = super.onCreateView(inflater, container, savedInstanceState);
 
-    @Override
-    public void onStart() {
-        super.onStart();
+		final ListView listView = (ListView) view.findViewById(android.R.id.list);
 
-        if (Version.isHoneycomb()) {
-            setRetainInstance(true);
-        }
+		final View headerView = inflater.inflate(R.layout.row_empty, listView, false);
 
-        getLoaderManager().getLoader(Loaders.BOOKMARKS_LOADER).onContentChanged();
+		listView.addHeaderView(headerView);
 
-        final ActionBar actionBar = getActivity().getActionBar();
+		return view;
+	}
 
-        actionBar.setDisplayHomeAsUpEnabled(false);
-    }
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+		final ListView listView = getListView();
 
-        mBookmarksAdapter = new BookmarksAdapter(getActivity(), null);
+		listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+		listView.setMultiChoiceModeListener(mMultiChoiceModeListener);
 
-        getLoaderManager().initLoader(Loaders.BOOKMARKS_LOADER, null, this);
+		setListAdapter(mBookmarksAdapter);
+		setListShown(false);
+	}
 
-        final ListView listView = getListView();
+	@Override
+	public void onStart() {
+		super.onStart();
 
-        listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-        listView.setMultiChoiceModeListener(mMultiChoiceModeListener);
+		if (Version.isHoneycomb()) {
+			setRetainInstance(true);
+		}
 
-        setListAdapter(mBookmarksAdapter);
-        setListShown(false);
-    }
+		getLoaderManager().getLoader(Loaders.BOOKMARKS_LOADER).onContentChanged();
 
-    private final AbsListView.MultiChoiceModeListener mMultiChoiceModeListener = new AbsListView.MultiChoiceModeListener() {
-        @Override
-        public void onItemCheckedStateChanged(final ActionMode actionMode, final int position, final long id, final boolean checked) {
-            if (INVALID_ID == id && checked) {
-                //prevent header item selection
-                getListView().setItemChecked(0, false);
-            } else {
-                actionMode.invalidate();
-            }
-        }
+		final ActionBar actionBar = getActivity().getActionBar();
 
-        @Override
-        public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
-            final MenuInflater menuInflater = actionMode.getMenuInflater();
+		actionBar.setDisplayHomeAsUpEnabled(false);
+	}
 
-            menuInflater.inflate(R.menu.context, menu);
+	private final AbsListView.MultiChoiceModeListener mMultiChoiceModeListener = new AbsListView.MultiChoiceModeListener() {
+		@Override
+		public void onItemCheckedStateChanged(final ActionMode actionMode, final int position, final long id, final boolean checked) {
+			if (INVALID_ID == id && checked) {
+				//prevent header item selection
+				getListView().setItemChecked(0, false);
+			} else {
+				actionMode.invalidate();
+			}
+		}
 
-            return true;
-        }
+		@Override
+		public boolean onCreateActionMode(ActionMode actionMode, Menu menu) {
+			final MenuInflater menuInflater = actionMode.getMenuInflater();
 
-        @Override
-        public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
-            final int count = getListView().getCheckedItemCount();
+			menuInflater.inflate(R.menu.context, menu);
 
-            actionMode.getMenu().findItem(R.id.open).setEnabled(count == 1);
+			return true;
+		}
 
-            actionMode.setTitle(getString(R.string.selected, count));
+		@Override
+		public boolean onPrepareActionMode(ActionMode actionMode, Menu menu) {
+			final int count = getListView().getCheckedItemCount();
 
-            return true;
-        }
+			actionMode.getMenu().findItem(R.id.open).setEnabled(count == 1);
 
-        @Override
-        public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
-            switch (menuItem.getItemId()) {
-                case R.id.open:
-                    final SparseBooleanArray array = getListView().getCheckedItemPositions();
+			actionMode.setTitle(getString(R.string.selected, count));
 
-                    final int listPosition = array.keyAt(array.indexOfValue(true));
+			return true;
+		}
 
-                    showBookmark(listPosition);
-                    
-                    actionMode.finish();
-                    
-                    return true;
-            }
-            return false;
-        }
+		@Override
+		public boolean onActionItemClicked(ActionMode actionMode, MenuItem menuItem) {
+			final SparseBooleanArray array;
 
-        @Override
-        public void onDestroyActionMode(ActionMode actionMode) {
-        }
-    };
-    
-    private void showBookmark(final int listPosition) {
-        Cursor cursor = mBookmarksAdapter.getCursor();
+			switch (menuItem.getItemId()) {
+				case R.id.open:
+					array = getListView().getCheckedItemPositions();
 
-        Bookmark bookmark = null;
-        if (listPosition > 0) {
-            bookmark = BookmarksHelper.getBookmark(cursor, listPosition - 1);
-        }
+					final int listPosition = array.keyAt(array.indexOfValue(true));
 
-        getListener().showBookmark(bookmark);
-    }
+					showBookmark(listPosition);
 
-    public void onListItemClick(final ListView listView, final View rowView, final int position, final long id) {
-        showBookmark(position);
-    }
+					actionMode.finish();
 
-    static class BookmarkLoader extends SimpleCursorLoader {
+					return true;
 
-        public BookmarkLoader(Context context) {
-            super(context);
-        }
+				case R.id.delete:
+					array = getListView().getCheckedItemPositions();
 
-        @Override
-        public Cursor loadInBackground() {
-            BookmarksHelper helper = new BookmarksHelper(getContext());
+					for (int i = 0; i < array.size(); i++) {
+						if (array.valueAt(i)) {
+							deleteBookmark(array.keyAt(i));
+						}
+					}
 
-            return helper.queryBookmarks();
-        }
-    }
+					actionMode.finish();
+					return true;
+			}
+			return false;
+		}
 
-    @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
-        return new BookmarkLoader(getActivity());
-    }
+		@Override
+		public void onDestroyActionMode(ActionMode actionMode) {
+		}
+	};
 
-    @Override
-    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        if (cursor.getCount() == 0) {
-            getListener().noBookmarks();
-        } else {
-            mBookmarksAdapter.swapCursor(cursor);
-            setListShown(true);
-        }
-    }
+	private void deleteBookmark(final int listPosition) {
+		Cursor cursor = mBookmarksAdapter.getCursor();
 
-    @Override
-    public void onLoaderReset(Loader<Cursor> cursorLoader) {
-        mBookmarksAdapter.swapCursor(null);
-    }
+		if (listPosition > 0) {
+			Intent intent = new Intent(Data.ACTION_DELETE, BookmarksHelper.getBookmarkUri(cursor, listPosition - 1));
 
-    IListener getListener() {
-        return (IListener) getActivity();
-    }
+			getActivity().startService(intent);
+		}
+	}
+
+	private void showBookmark(final int listPosition) {
+		Cursor cursor = mBookmarksAdapter.getCursor();
+
+		if (listPosition > 0) {
+			Uri data = BookmarksHelper.getBookmarkUri(cursor, listPosition - 1);
+
+			getListener().showBookmark(data);
+		} else {
+
+			getListener().showBookmark(null);
+		}
+	}
+
+	public void onListItemClick(final ListView listView, final View rowView, final int position, final long id) {
+		showBookmark(position);
+	}
+
+	private static class BookmarkLoader extends CursorLoader {
+		public BookmarkLoader(Context context) {
+			super(context, Data.URI_BOOKMARKS, Data.BOOKMARKS_PROJECTION, null, null, null);
+		}
+
+		private ContentObserver mDataObserver;
+
+		@Override
+		protected void onStartLoading() {
+			super.onStartLoading();
+
+			if (mDataObserver == null) {
+				mDataObserver = new ForceLoadContentObserver();
+
+				getContext().getContentResolver().registerContentObserver(Data.URI_BOOKMARKS, true, mDataObserver);
+			}
+		}
+
+		@Override
+		protected void onStopLoading() {
+			if (mDataObserver == null) {
+				getContext().getContentResolver().unregisterContentObserver(mDataObserver);
+
+				mDataObserver = null;
+			}
+
+			super.onStopLoading();
+		}
+	}
+
+	@Override
+	public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
+		return new BookmarkLoader(getActivity());
+	}
+
+	@Override
+	public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+		if (cursor.getCount() == 0) {
+			getListener().noBookmarks();
+		} else {
+			mBookmarksAdapter.swapCursor(cursor);
+			setListShown(true);
+		}
+	}
+
+	@Override
+	public void onLoaderReset(Loader<Cursor> cursorLoader) {
+		mBookmarksAdapter.swapCursor(null);
+	}
+
+	IListener getListener() {
+		return (IListener) getActivity();
+	}
 }

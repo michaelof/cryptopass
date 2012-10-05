@@ -11,18 +11,4 @@ public final class Bookmark
 		this.username = username;
 	}
 
-	public boolean isEmpty()
-	{
-		if (url != null && url.length() > 0)
-		{
-			return false;
-		}
-
-		if (username != null && username.length() == 0)
-		{
-			return true;
-		}
-
-		return false;
-	}
 }
