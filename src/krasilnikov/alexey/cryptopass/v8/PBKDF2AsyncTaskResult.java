@@ -1,4 +1,4 @@
-package org.example.cryptopass.v8;
+package krasilnikov.alexey.cryptopass.v8;
 
 abstract class PBKDF2AsyncTaskResult
 {

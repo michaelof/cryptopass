@@ -1,9 +1,11 @@
-package org.example.cryptopass;
+package krasilnikov.alexey.cryptopass.data;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
+import krasilnikov.alexey.cryptopass.Data;
+import krasilnikov.alexey.cryptopass.data.DatabaseHelper;
 
 public class BookmarksHelper {
 	private final DatabaseHelper dbHelper;

@@ -1,4 +1,4 @@
-package org.example.cryptopass.v11;
+package krasilnikov.alexey.cryptopass.v11;
 
 import android.app.ActionBar;
 import android.app.ListFragment;
@@ -15,7 +15,8 @@ import android.util.SparseBooleanArray;
 import android.view.*;
 import android.widget.AbsListView;
 import android.widget.ListView;
-import org.example.cryptopass.*;
+import krasilnikov.alexey.cryptopass.*;
+import krasilnikov.alexey.cryptopass.data.BookmarksHelper;
 
 public class BookmarksFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final int INVALID_ID = -1;

@@ -1,4 +1,4 @@
-package org.example.cryptopass;
+package krasilnikov.alexey.cryptopass;
 
 /*
  * Copyright (c) 2010 Braiden Kindt

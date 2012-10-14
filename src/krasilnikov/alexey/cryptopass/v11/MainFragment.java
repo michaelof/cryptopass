@@ -1,4 +1,4 @@
-package org.example.cryptopass.v11;
+package krasilnikov.alexey.cryptopass.v11;
 
 import android.app.Fragment;
 import android.app.LoaderManager;
@@ -17,10 +17,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import org.example.cryptopass.Bookmark;
-import org.example.cryptopass.Data;
-import org.example.cryptopass.PBKDF2Args;
-import org.example.cryptopass.R;
+import krasilnikov.alexey.cryptopass.Bookmark;
+import krasilnikov.alexey.cryptopass.PBKDF2Args;
+import krasilnikov.alexey.cryptopass.Data;
+import krasilnikov.alexey.cryptopass.R;
 
 public class MainFragment extends Fragment implements TextWatcher, IResultHandler, LoaderManager.LoaderCallbacks<GenerateLoaderResult> {
 	public static MainFragment instantiate(final Uri data) {

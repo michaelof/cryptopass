@@ -1,4 +1,4 @@
-package org.example.cryptopass.v8;
+package krasilnikov.alexey.cryptopass.v8;
 
 import android.app.Activity;
 import android.content.Context;
@@ -14,10 +14,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import org.example.cryptopass.Bookmark;
-import org.example.cryptopass.Data;
-import org.example.cryptopass.PBKDF2Args;
-import org.example.cryptopass.R;
+import krasilnikov.alexey.cryptopass.Bookmark;
+import krasilnikov.alexey.cryptopass.PBKDF2Args;
+import krasilnikov.alexey.cryptopass.Data;
+import krasilnikov.alexey.cryptopass.R;
 
 public final class MainActivity extends Activity implements TextWatcher {
 	private Loader activeLoader;

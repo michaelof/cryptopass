@@ -1,4 +1,4 @@
-package org.example.cryptopass.v11;
+package krasilnikov.alexey.cryptopass.v11;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -8,8 +8,8 @@ import android.os.Handler;
 import android.view.MenuItem;
 import android.view.Window;
 import android.view.WindowManager;
-import org.example.cryptopass.OperationManager;
-import org.example.cryptopass.R;
+import krasilnikov.alexey.cryptopass.OperationManager;
+import krasilnikov.alexey.cryptopass.R;
 
 public class StartActivity extends Activity implements BookmarksFragment.IListener, OperationManager.OperationListener {
 	private static final String FIRST_START = "firstStart";

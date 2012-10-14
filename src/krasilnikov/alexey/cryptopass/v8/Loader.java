@@ -1,7 +1,7 @@
-package org.example.cryptopass.v8;
+package krasilnikov.alexey.cryptopass.v8;
 
-import org.example.cryptopass.Bookmark;
-import org.example.cryptopass.PBKDF2Args;
+import krasilnikov.alexey.cryptopass.Bookmark;
+import krasilnikov.alexey.cryptopass.PBKDF2Args;
 
 import android.util.Log;
 

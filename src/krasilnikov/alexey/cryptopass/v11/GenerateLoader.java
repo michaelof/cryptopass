@@ -1,12 +1,12 @@
-package org.example.cryptopass.v11;
+package krasilnikov.alexey.cryptopass.v11;
 
 import android.content.Context;
 import android.content.Loader;
 import android.os.AsyncTask;
-import org.example.cryptopass.Bookmark;
-import org.example.cryptopass.IIterationsListener;
-import org.example.cryptopass.PBKDF2Args;
-import org.example.cryptopass.PasswordMaker;
+import krasilnikov.alexey.cryptopass.Bookmark;
+import krasilnikov.alexey.cryptopass.IIterationsListener;
+import krasilnikov.alexey.cryptopass.PBKDF2Args;
+import krasilnikov.alexey.cryptopass.PasswordMaker;
 
 class GenerateLoader extends Loader<GenerateLoaderResult> implements IIterationsListener {
 

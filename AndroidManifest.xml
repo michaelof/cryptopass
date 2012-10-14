@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="org.example.cryptopass"
+          package="krasilnikov.alexey.cryptopass"
           android:versionCode="1"
           android:versionName="1.0">
     <uses-sdk android:minSdkVersion="8" android:targetSdkVersion="15"/>
 
     <application android:label="@string/app_name" android:icon="@drawable/icon">
-        <service android:exported="false" android:name=".ActionService">
+        <service android:exported="false" android:name="krasilnikov.alexey.cryptopass.ActionService">
             <intent-filter>
-                <action android:name="org.example.cryptopass.SAVE"/>
-                <action android:name="org.example.cryptopass.DELETE"/>
+                <action android:name="krasilnikov.alexey.cryptopass.SAVE"/>
+                <action android:name="krasilnikov.alexey.cryptopass.DELETE"/>
                 <data android:scheme="content"/>
             </intent-filter>
         </service>
 
-        <activity android:name=".v8.StartActivity"
+        <activity android:name="krasilnikov.alexey.cryptopass.v8.StartActivity"
                   android:label="@string/app_name"
                   android:enabled="@bool/preHoneycomb">
             <intent-filter>
@@ -23,19 +23,19 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".v8.MainActivity"
+        <activity android:name="krasilnikov.alexey.cryptopass.v8.MainActivity"
                   android:enabled="@bool/preHoneycomb"
                   android:exported="false"
                   android:windowSoftInputMode="stateAlwaysVisible|adjustResize">
 
             <intent-filter>
-                <action android:name="org.example.cryptopass.SHOW"/>
+                <action android:name="krasilnikov.alexey.cryptopass.SHOW"/>
                 <category android:name="android.intent.category.DEFAULT"/>
                 <data android:scheme="content"/>
             </intent-filter>
         </activity>
 
-        <activity android:name=".v11.StartActivity"
+        <activity android:name="krasilnikov.alexey.cryptopass.v11.StartActivity"
                   android:label="@string/app_name"
                   android:enabled="@bool/postHoneycomb">
             <intent-filter>
@@ -44,8 +44,8 @@
             </intent-filter>
         </activity>
 
-        <provider android:authorities="org.example.cryptopass"
-                  android:name=".data.DataProvider"
+        <provider android:authorities="krasilnikov.alexey.cryptopass"
+                  android:name="krasilnikov.alexey.cryptopass.data.DataProvider"
                   android:exported="false"/>
     </application>
 </manifest>

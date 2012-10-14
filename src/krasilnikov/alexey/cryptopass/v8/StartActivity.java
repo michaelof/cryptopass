@@ -1,4 +1,4 @@
-package org.example.cryptopass.v8;
+package krasilnikov.alexey.cryptopass.v8;
 
 import android.app.ListActivity;
 import android.content.Intent;
@@ -17,7 +17,8 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TextView;
-import org.example.cryptopass.*;
+import krasilnikov.alexey.cryptopass.*;
+import krasilnikov.alexey.cryptopass.data.BookmarksHelper;
 
 public class StartActivity extends ListActivity implements OnItemClickListener, OperationManager.OperationListener {
 	private static final int INVALID_ID = -1;

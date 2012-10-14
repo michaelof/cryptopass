@@ -1,10 +1,10 @@
-package org.example.cryptopass;
+package krasilnikov.alexey.cryptopass;
 
 import android.net.Uri;
 import android.text.TextUtils;
 
 public class Data {
-	public static final Uri URI_BOOKMARKS = Uri.parse("content://org.example.cryptopass/bookmarks");
+	public static final Uri URI_BOOKMARKS = Uri.parse("content://krasilnikov.alexey.cryptopass/bookmarks");
 
 	public static Uri makeBookmarkUri(String username, String url) {
 		return URI_BOOKMARKS.buildUpon().
@@ -46,9 +46,9 @@ public class Data {
 
 	public static final int DEFAULT_LENGTH = 25;
 
-	public static final String ACTION_SAVE = "org.example.cryptopass.SAVE";
-	public static final String ACTION_DELETE = "org.example.cryptopass.DELETE";
-	public static final String ACTION_SHOW = "org.example.cryptopass.SHOW";
+	public static final String ACTION_SAVE = "krasilnikov.alexey.cryptopass.SAVE";
+	public static final String ACTION_DELETE = "krasilnikov.alexey.cryptopass.DELETE";
+	public static final String ACTION_SHOW = "krasilnikov.alexey.cryptopass.SHOW";
 
 	public static final String ARGS_URL = "url";
 	public static final String ARGS_USERNAME = "username";

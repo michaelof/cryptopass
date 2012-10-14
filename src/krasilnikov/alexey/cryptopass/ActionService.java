@@ -1,4 +1,4 @@
-package org.example.cryptopass;
+package krasilnikov.alexey.cryptopass;
 
 import android.app.IntentService;
 import android.content.ContentValues;

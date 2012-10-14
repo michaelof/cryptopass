@@ -1,4 +1,4 @@
-package org.example.cryptopass;
+package krasilnikov.alexey.cryptopass;
 
 import android.content.Context;
 import android.database.Cursor;

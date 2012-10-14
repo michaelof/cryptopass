@@ -1,6 +1,6 @@
-package org.example.cryptopass.v11;
+package krasilnikov.alexey.cryptopass.v11;
 
-import org.example.cryptopass.Bookmark;
+import krasilnikov.alexey.cryptopass.Bookmark;
 
 public interface IResultHandler
 {

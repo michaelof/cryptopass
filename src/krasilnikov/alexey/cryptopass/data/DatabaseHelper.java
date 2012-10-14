@@ -1,4 +1,4 @@
-package org.example.cryptopass;
+package krasilnikov.alexey.cryptopass.data;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
@@ -11,7 +11,7 @@ public class DatabaseHelper extends SQLiteOpenHelper
 
 	public static final String BOOKMARKS_TABLE = "bookmarks";
 
-	DatabaseHelper(Context context)
+	public DatabaseHelper(Context context)
 	{
 		super(context, DATABASE_NAME, null, DATABASE_VERSION);
 	}

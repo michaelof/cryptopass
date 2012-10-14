@@ -1,4 +1,4 @@
-package org.example.cryptopass.v11;
+package krasilnikov.alexey.cryptopass.v11;
 
 class Loaders {
 	public static int BOOKMARKS_LOADER = 1;
