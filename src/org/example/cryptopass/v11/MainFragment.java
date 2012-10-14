@@ -15,6 +15,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import org.example.cryptopass.Bookmark;
 import org.example.cryptopass.Data;
 import org.example.cryptopass.PBKDF2Args;
@@ -49,21 +51,31 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
 	private EditText secretEdit;
 	private EditText usernameEdit;
 	private EditText urlEdit;
+	private SeekBar lengthSeek;
+	private TextView lengthText;
 
 	private TextAppearanceSpan subTitleAppearance;
 
 	private Bookmark argsForKeyGenerated = null;
 
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View view = inflater.inflate(R.layout.main, container, false);
+		return inflater.inflate(R.layout.main, container, false);
+	}
+
+	@Override
+	public void onViewCreated(View view, Bundle savedInstanceState) {
+		super.onViewCreated(view, savedInstanceState);
 
 		secretEdit = (EditText) view.findViewById(R.id.secretEdit);
 		usernameEdit = (EditText) view.findViewById(R.id.usernameEdit);
 		urlEdit = (EditText) view.findViewById(R.id.urlEdit);
 
+		lengthSeek = (SeekBar) view.findViewById(R.id.lengthSeek);
+		lengthText = (TextView) view.findViewById(R.id.lengthText);
+
 		resultButton = (Button) view.findViewById(R.id.passBtn);
 
-		subTitleAppearance = new TextAppearanceSpan(inflater.getContext(), android.R.style.TextAppearance_Small);
+		subTitleAppearance = new TextAppearanceSpan(getActivity(), android.R.style.TextAppearance_Small);
 
 		if (savedInstanceState == null) {
 			final Bundle args = getArguments();
@@ -73,6 +85,7 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
 				if (data != null) {
 					usernameEdit.setText(Data.getUsername(data));
 					urlEdit.setText(Data.getUrl(data));
+					lengthSeek.setProgress(Data.getLength(data) - 8);
 				}
 			}
 		}
@@ -92,9 +105,25 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
 			}
 		});
 
-		return view;
-	}
+		lengthSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				if (fromUser && !wasPaused) {
+					updateLengthText();
+				}
+			}
 
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+			}
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+			}
+		});
+
+		updateLengthText();
+	}
 
 	@Override
 	public void onStart() {
@@ -109,15 +138,32 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
 		getLoaderManager().initLoader(Loaders.RESULT_GENERATE_LOADER, null, this);
 	}
 
-	void resultButtonClicked() {
+	protected int getPasswordLength() {
+		return lengthSeek.getProgress() + 8;
+	}
+
+	protected void updateLengthText() {
+		int length = getPasswordLength();
+		String str = String.format("%02d", length);
+
+		lengthText.setText(str);
 		if (activeResult != null) {
+			resultButtonResult(activeResult, length);
+		}
+	}
+
+	protected void resultButtonClicked() {
+		if (activeResult != null) {
+			int length = getPasswordLength();
+
 			ClipboardManager clipboardManager = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-			clipboardManager.setPrimaryClip(ClipData.newPlainText("generated", activeResult));
+			clipboardManager.setPrimaryClip(ClipData.newPlainText("generated", activeResult.substring(0, length)));
 
 			Intent saveIntent = new Intent(Data.ACTION_SAVE, Data.URI_BOOKMARKS);
 
 			saveIntent.putExtra(Data.ARGS_URL, argsForKeyGenerated.url);
 			saveIntent.putExtra(Data.ARGS_USERNAME, argsForKeyGenerated.username);
+			saveIntent.putExtra(Data.ARGS_LENGTH, length);
 
 			getActivity().startService(saveIntent);
 		}
@@ -179,8 +225,12 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
 	}
 
 	private void resultButtonResult(String result) {
+		resultButtonResult(result, getPasswordLength());
+	}
+
+	private void resultButtonResult(String result, int length) {
 		activeResult = result;
-		String str = getString(R.string.result, result);
+		String str = getString(R.string.result, result.substring(0, length));
 
 		final int start = str.indexOf("\n");
 		final int end = str.length();

@@ -35,8 +35,9 @@ public class DataProvider extends ContentProvider {
 	public Uri insert(Uri uri, ContentValues values) {
 		String username = values.getAsString(Data.ARGS_USERNAME);
 		String url = values.getAsString(Data.ARGS_URL);
+		Integer length = values.getAsInteger(Data.ARGS_LENGTH);
 
-		mBookmarksHelper.saveBookmark(username, url);
+		mBookmarksHelper.saveBookmark(username, url, length != null ? length : Data.DEFAULT_LENGTH);
 
 		getContext().getContentResolver().notifyChange(Data.URI_BOOKMARKS, null);
 
@@ -49,12 +50,6 @@ public class DataProvider extends ContentProvider {
 		String url = Data.getUrl(uri);
 
 		int deleted = mBookmarksHelper.deleteBookmark(username, url);
-
-		try {
-			Thread.sleep(10000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-		}
 
 		getContext().getContentResolver().notifyChange(Data.URI_BOOKMARKS, null);
 

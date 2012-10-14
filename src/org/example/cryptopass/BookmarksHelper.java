@@ -16,18 +16,19 @@ public class BookmarksHelper {
 		return dbHelper.getReadableDatabase().query(DatabaseHelper.BOOKMARKS_TABLE, columns, null, null, null, null, "_ID DESC");
 	}
 
-	public void saveBookmark(String username, String url) {
+	public void saveBookmark(String username, String url, int length) {
 		ContentValues values = new ContentValues();
 
 		values.put(Data.BOOKMARKS_USERNAME, username != null ? username : "");
 		values.put(Data.BOOKMARKS_URL, url != null ? url : "");
+		values.put(Data.BOOKMARKS_LENGTH, length);
 
 		dbHelper.getWritableDatabase().insert(DatabaseHelper.BOOKMARKS_TABLE, null, values);
 	}
 
 	public static Uri getBookmarkUri(final Cursor c, final int position) {
 		if (c.moveToPosition(position)) {
-			return Data.makeBookmarkUri(c.getString(Data.USERNAME_COLUMN), c.getString(Data.URL_COLUMN));
+			return Data.makeBookmarkUri(c.getString(Data.USERNAME_COLUMN), c.getString(Data.URL_COLUMN), c.getInt(Data.LENGTH_COLUMN));
 		}
 
 		return null;

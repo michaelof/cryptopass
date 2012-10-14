@@ -100,7 +100,7 @@ public class PBKDF2AsyncTask extends AsyncTask<Void, Void, PBKDF2AsyncTaskResult
 
 			if (digest != null)
 			{
-				String result = Base64.encodeToString(digest, Base64.DEFAULT).substring(0, 25);
+				String result = Base64.encodeToString(digest, Base64.DEFAULT);
 				Bookmark bookmark = new Bookmark(url, username);
 
 				return new SuccessResult(bookmark, result);

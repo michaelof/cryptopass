@@ -19,9 +19,11 @@ public class ActionService extends IntentService {
 
 			String username = intent.getStringExtra(Data.ARGS_USERNAME);
 			String url = intent.getStringExtra(Data.ARGS_URL);
+			int length = intent.getIntExtra(Data.ARGS_LENGTH, Data.DEFAULT_LENGTH);
 
 			values.put(Data.ARGS_USERNAME, username);
 			values.put(Data.ARGS_URL, url);
+			values.put(Data.ARGS_LENGTH, length);
 
 			Object obj = OperationManager.getInstance().operationStarted(Data.URI_BOOKMARKS);
 			try {

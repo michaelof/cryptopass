@@ -111,7 +111,7 @@ class GenerateLoader extends Loader<GenerateLoaderResult> implements IIterations
         String username = args.username;
         String url = args.url;
 
-        String result = PasswordMaker.make(this, secret, username, url, 25);
+        String result = PasswordMaker.make(this, secret, username, url);
 
         if (result != null) {
             Bookmark bookmark = new Bookmark(url, username);

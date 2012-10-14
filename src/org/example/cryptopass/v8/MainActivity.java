@@ -12,6 +12,8 @@ import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.SeekBar;
+import android.widget.TextView;
 import org.example.cryptopass.Bookmark;
 import org.example.cryptopass.Data;
 import org.example.cryptopass.PBKDF2Args;
@@ -37,6 +39,8 @@ public final class MainActivity extends Activity implements TextWatcher {
 	private EditText secretEdit;
 	private EditText usernameEdit;
 	private EditText urlEdit;
+	private SeekBar lengthSeek;
+	private TextView lengthText;
 
 	private TextAppearanceSpan subTitleAppearance;
 
@@ -57,6 +61,9 @@ public final class MainActivity extends Activity implements TextWatcher {
 		usernameEdit = (EditText) findViewById(R.id.usernameEdit);
 		urlEdit = (EditText) findViewById(R.id.urlEdit);
 
+		lengthSeek = (SeekBar) findViewById(R.id.lengthSeek);
+		lengthText = (TextView) findViewById(R.id.lengthText);
+
 		resultButton = (Button) findViewById(R.id.passBtn);
 
 		Intent startIntent = getIntent();
@@ -65,6 +72,7 @@ public final class MainActivity extends Activity implements TextWatcher {
 		if (data != null) {
 			usernameEdit.setText(Data.getUsername(data));
 			urlEdit.setText(Data.getUrl(data));
+			lengthSeek.setProgress(Data.getLength(data) - 8);
 		}
 
 		if (urlEdit.getText().length() == 0) {
@@ -82,20 +90,56 @@ public final class MainActivity extends Activity implements TextWatcher {
 			}
 		});
 
+		updateLength();
+
+		lengthSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				if (fromUser) {
+					updateLength();
+				}
+			}
+
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+			}
+
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+			}
+		});
+
 		initLoader();
 	}
 
-	void resultButtonClicked() {
+	protected int getPasswordLength() {
+		return lengthSeek.getProgress() + 8;
+	}
+
+	protected void updateLength() {
+		int length = getPasswordLength();
+		String str = String.format("%02d", length);
+
+		lengthText.setText(str);
+
+		if (activeResult != null) {
+			resultButtonResult(activeResult, length);
+		}
+	}
+
+	protected void resultButtonClicked() {
 		Bookmark bookmark = activeLoader.lastBookmark();
 
 		if (activeResult != null) {
+			int length = getPasswordLength();
 			ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-			clipboard.setText(activeResult);
+			clipboard.setText(activeResult.substring(0, length));
 
 			Intent saveIntent = new Intent(Data.ACTION_SAVE, Data.URI_BOOKMARKS);
 
 			saveIntent.putExtra(Data.ARGS_URL, bookmark.url);
 			saveIntent.putExtra(Data.ARGS_USERNAME, bookmark.username);
+			saveIntent.putExtra(Data.ARGS_LENGTH, length);
 
 			startService(saveIntent);
 		}
@@ -127,7 +171,11 @@ public final class MainActivity extends Activity implements TextWatcher {
 		return activeLoader.onActivityGetRetainState();
 	}
 
-	void updateResult(PBKDF2Args args) {
+	protected void updateResult() {
+		updateResult(getInputs());
+	}
+
+	protected void updateResult(PBKDF2Args args) {
 		activeLoader.restart(args);
 	}
 
@@ -167,7 +215,7 @@ public final class MainActivity extends Activity implements TextWatcher {
 		resultButtonError(ex.getMessage());
 	}
 
-	void resultButtonWorking() {
+	private void resultButtonWorking() {
 		activeResult = null;
 		resultButton.setText(R.string.working);
 		resultButton.setEnabled(false);
@@ -175,10 +223,14 @@ public final class MainActivity extends Activity implements TextWatcher {
 
 	private String activeResult;
 
-	void resultButtonResult(String result) {
+	private void resultButtonResult(String result) {
+		resultButtonResult(result, getPasswordLength());
+	}
+
+	private void resultButtonResult(String result, int length) {
 		activeResult = result;
 
-		String str = getString(R.string.result, result);
+		String str = getString(R.string.result, result.substring(0, length));
 
 		final int start = str.indexOf("\n");
 		final int end = str.length();
@@ -190,19 +242,19 @@ public final class MainActivity extends Activity implements TextWatcher {
 		resultButton.setEnabled(true);
 	}
 
-	void resultButtonEmpty() {
+	private void resultButtonEmpty() {
 		activeResult = null;
 		resultButton.setText(R.string.working_secret_empty);
 		resultButton.setEnabled(false);
 	}
 
-	void resultButtonError(String msg) {
+	private void resultButtonError(String msg) {
 		activeResult = null;
 		resultButton.setText(msg);
 		resultButton.setEnabled(false);
 	}
 
-	PBKDF2Args getInputs() {
+	private PBKDF2Args getInputs() {
 		PBKDF2Args args = new PBKDF2Args();
 
 		args.password = secretEdit.getText().toString();
@@ -215,7 +267,7 @@ public final class MainActivity extends Activity implements TextWatcher {
 	@Override
 	public void afterTextChanged(Editable s) {
 		if (userInput && userInteractive) {
-			updateResult(getInputs());
+			updateResult();
 		}
 	}
 
