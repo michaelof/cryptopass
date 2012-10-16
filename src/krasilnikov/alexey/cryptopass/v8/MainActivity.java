@@ -55,7 +55,7 @@ public final class MainActivity extends Activity implements TextWatcher {
 
 		setContentView(R.layout.main);
 
-		subTitleAppearance = new TextAppearanceSpan(this, android.R.style.TextAppearance_Small);
+		subTitleAppearance = new TextAppearanceSpan(this, android.R.style.TextAppearance_Small_Inverse);
 
 		secretEdit = (EditText) findViewById(R.id.secretEdit);
 		usernameEdit = (EditText) findViewById(R.id.usernameEdit);
