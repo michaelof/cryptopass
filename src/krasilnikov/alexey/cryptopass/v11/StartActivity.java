@@ -64,6 +64,7 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
 				Intent intent = new Intent(this, StartActivity.class);
 				intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 				startActivity(intent);
+				overridePendingTransition(0, 0);
 
 				return true;
 			default:
@@ -77,6 +78,7 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
 		intent.putExtra(FIRST_START, true);
 		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
 		startActivity(intent);
+		overridePendingTransition(0, 0);
 	}
 
 	@Override

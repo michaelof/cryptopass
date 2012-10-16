@@ -13,13 +13,14 @@ import android.text.style.TextAppearanceSpan;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import krasilnikov.alexey.cryptopass.Bookmark;
-import krasilnikov.alexey.cryptopass.PBKDF2Args;
 import krasilnikov.alexey.cryptopass.Data;
+import krasilnikov.alexey.cryptopass.PBKDF2Args;
 import krasilnikov.alexey.cryptopass.R;
 
 public class MainFragment extends Fragment implements TextWatcher, IResultHandler, LoaderManager.LoaderCallbacks<GenerateLoaderResult> {
@@ -47,6 +48,7 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
 
 	boolean wasPaused = false;
 
+	private View containerView;
 	private Button resultButton;
 	private EditText secretEdit;
 	private EditText usernameEdit;
@@ -65,6 +67,8 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
 	@Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
+
+		containerView = view;
 
 		secretEdit = (EditText) view.findViewById(R.id.secretEdit);
 		usernameEdit = (EditText) view.findViewById(R.id.usernameEdit);
@@ -88,10 +92,6 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
 					lengthSeek.setProgress(Data.getLength(data) - 8);
 				}
 			}
-		}
-
-		if (urlEdit.getText().length() == 0) {
-			urlEdit.requestFocus();
 		}
 
 		secretEdit.addTextChangedListener(this);
@@ -173,6 +173,22 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
 		super.onResume();
 
 		wasPaused = false;
+
+		View focused = containerView.findFocus();
+		if (focused == null) {
+			if (urlEdit.getText().length() == 0) {
+				urlEdit.requestFocus();
+				focused = urlEdit;
+			} else {
+				secretEdit.requestFocus();
+				focused = secretEdit;
+			}
+		}
+
+		if (focused instanceof EditText) {
+			InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+			imm.showSoftInput(focused, 0);
+		}
 	}
 
 	public void onPause() {
@@ -182,6 +198,21 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
 		getGenerator().clearArgs();
 
 		super.onPause();
+	}
+
+	@Override
+	public void onDestroyView() {
+		super.onDestroyView();
+
+		containerView = null;
+		secretEdit = null;
+		usernameEdit = null;
+		urlEdit = null;
+
+		lengthSeek = null;
+		lengthText = null;
+
+		resultButton = null;
 	}
 
 	private GenerateLoader getGenerator() {
