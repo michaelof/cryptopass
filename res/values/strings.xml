@@ -13,6 +13,7 @@
     
     <string name="open">Open</string>
     <string name="delete">Delete</string>
-    
+    <string name="cancel">Cancel</string>
+
     <string name="selected">Selected: %d</string>
 </resources>
