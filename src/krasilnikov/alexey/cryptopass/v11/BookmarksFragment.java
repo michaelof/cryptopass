@@ -60,7 +60,7 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
 		listView.setMultiChoiceModeListener(mMultiChoiceModeListener);
 
 		setListAdapter(mBookmarksAdapter);
-		setListShown(false);
+		setListShownNoAnimation(false);
 	}
 
 	@Override
@@ -213,7 +213,7 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
 			getListener().noBookmarks();
 		} else {
 			mBookmarksAdapter.swapCursor(cursor);
-			setListShown(true);
+			setListShownNoAnimation(true);
 		}
 	}
 
