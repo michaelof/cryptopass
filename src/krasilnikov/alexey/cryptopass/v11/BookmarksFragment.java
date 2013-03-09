@@ -192,7 +192,7 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
 
 		@Override
 		protected void onStopLoading() {
-			if (mDataObserver == null) {
+			if (mDataObserver != null) {
 				getContext().getContentResolver().unregisterContentObserver(mDataObserver);
 
 				mDataObserver = null;
