@@ -17,164 +17,170 @@ import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TextView;
-import krasilnikov.alexey.cryptopass.*;
+
+import krasilnikov.alexey.cryptopass.BookmarksAdapter;
+import krasilnikov.alexey.cryptopass.Data;
+import krasilnikov.alexey.cryptopass.OperationManager;
+import krasilnikov.alexey.cryptopass.R;
 import krasilnikov.alexey.cryptopass.data.BookmarksHelper;
 
 public class StartActivity extends ListActivity implements OnItemClickListener, OperationManager.OperationListener {
-	private static final int INVALID_ID = -1;
+    private static final int INVALID_ID = -1;
 
-	private Cursor bookmarksCursor;
+    private Cursor bookmarksCursor;
 
-	/**
-	 * Called when the activity is first created.
-	 */
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
+    /**
+     * Called when the activity is first created.
+     */
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
 
-		super.onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState);
 
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
-		setProgressBarIndeterminateVisibility(false);
+        setProgressBarIndeterminateVisibility(false);
 
-		bookmarksCursor = getContentResolver().query(Data.URI_BOOKMARKS, Data.BOOKMARKS_PROJECTION, null, null, null);
-		startManagingCursor(bookmarksCursor);
+        bookmarksCursor = getContentResolver().query(Data.makeBookmarksUri(this), Data.BOOKMARKS_PROJECTION, null, null, null);
+        startManagingCursor(bookmarksCursor);
 
-		if (bookmarksCursor.getCount() == 0) {
-			startActivity(new Intent(this, MainActivity.class));
-			finish();
-		} else {
-			ListView listView = getListView();
+        if (bookmarksCursor.getCount() == 0) {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        } else {
+            ListView listView = getListView();
 
-			TextView headerView = (TextView) getLayoutInflater().inflate(R.layout.row_empty, listView, false);
+            TextView headerView = (TextView) getLayoutInflater().inflate(R.layout.row_empty, listView, false);
 
-			listView.addHeaderView(headerView);
-			listView.setOnItemClickListener(this);
-			registerForContextMenu(listView);
+            listView.addHeaderView(headerView);
+            listView.setOnItemClickListener(this);
+            registerForContextMenu(listView);
 
-			setListAdapter(new BookmarksAdapter(this, bookmarksCursor));
-		}
-	}
+            setListAdapter(new BookmarksAdapter(this, bookmarksCursor));
+        }
+    }
 
-	private final ContentObserver mBookmarksObserver = new ContentObserver(new Handler()) {
-		@Override
-		public void onChange(boolean selfChange) {
-			if (bookmarksCursor != null && !bookmarksCursor.isClosed()) {
-				bookmarksCursor.requery();
-			}
-		}
-	};
+    private final ContentObserver mBookmarksObserver = new ContentObserver(new Handler()) {
+        @Override
+        public void onChange(boolean selfChange) {
+            if (bookmarksCursor != null && !bookmarksCursor.isClosed()) {
+                bookmarksCursor.requery();
+            }
+        }
+    };
 
-	@Override
-	protected void onResume() {
-		super.onResume();
+    @Override
+    protected void onResume() {
+        super.onResume();
 
-		OperationManager.getInstance().subscribe(this);
-		getContentResolver().registerContentObserver(Data.URI_BOOKMARKS, false, mBookmarksObserver);
-	}
+        OperationManager.getInstance().subscribe(this);
+        getContentResolver().registerContentObserver(Data.makeBookmarksUri(this), false, mBookmarksObserver);
+    }
 
-	@Override
-	protected void onPause() {
-		super.onPause();
+    @Override
+    protected void onPause() {
+        super.onPause();
 
-		getContentResolver().unregisterContentObserver(mBookmarksObserver);
-		OperationManager.getInstance().unsubscribe(this);
-	}
+        getContentResolver().unregisterContentObserver(mBookmarksObserver);
+        OperationManager.getInstance().unsubscribe(this);
+    }
 
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
 
-		bookmarksCursor = null;
-	}
+        bookmarksCursor = null;
+    }
 
-	@Override
-	public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-		if (INVALID_ID != id) {
-			startMainBookmark(position);
-		} else {
-			startMainEmpty();
-		}
-	}
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        if (INVALID_ID != id) {
+            startMainBookmark(position);
+        } else {
+            startMainEmpty();
+        }
+    }
 
-	void startMainEmpty() {
-		startActivity(new Intent(StartActivity.this, MainActivity.class));
-	}
-
-
-	void startMainBookmark(final int listPosition) {
-		if (listPosition > 0) {
-			Intent intent = new Intent(Data.ACTION_SHOW, BookmarksHelper.getBookmarkUri(bookmarksCursor, listPosition - 1));
-
-			startActivity(intent);
-		}
-	}
-
-	private void deleteBookmark(final int listPosition) {
-		if (listPosition > 0) {
-			Intent intent = new Intent(Data.ACTION_DELETE, BookmarksHelper.getBookmarkUri(bookmarksCursor, listPosition - 1));
-
-			startService(intent);
-		}
-	}
-
-	@Override
-	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
-		super.onCreateContextMenu(menu, v, menuInfo);
-
-		if (v == getListView()) {
-			AdapterContextMenuInfo adapterMenuInfo = (AdapterContextMenuInfo) menuInfo;
-
-			if (INVALID_ID != adapterMenuInfo.id) {
-				getMenuInflater().inflate(R.menu.context, menu);
-
-				TextView tv = (TextView) adapterMenuInfo.targetView;
-
-				menu.setHeaderTitle(tv.getText());
-			}
-		}
-	}
+    void startMainEmpty() {
+        startActivity(new Intent(StartActivity.this, MainActivity.class));
+    }
 
 
-	@Override
-	public boolean onContextItemSelected(MenuItem item) {
-		AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) item.getMenuInfo();
+    void startMainBookmark(final int listPosition) {
+        if (listPosition > 0) {
+            Uri uri = BookmarksHelper.getBookmarkUri(this, bookmarksCursor, listPosition - 1);
+            Intent intent = new Intent(Data.ACTION_SHOW, uri);
 
-		if (INVALID_ID != menuInfo.id) {
-			switch (item.getItemId()) {
-				case R.id.open:
-					startMainBookmark(menuInfo.position);
+            startActivity(intent);
+        }
+    }
 
-					return true;
+    private void deleteBookmark(final int listPosition) {
+        if (listPosition > 0) {
+            Uri uri = BookmarksHelper.getBookmarkUri(this, bookmarksCursor, listPosition - 1);
+            Intent intent = new Intent(Data.ACTION_DELETE, uri);
 
-				case R.id.delete:
-					deleteBookmark(menuInfo.position);
+            startService(intent);
+        }
+    }
 
-					return true;
-			}
-		}
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, v, menuInfo);
 
-		return super.onContextItemSelected(item);
-	}
+        if (v == getListView()) {
+            AdapterContextMenuInfo adapterMenuInfo = (AdapterContextMenuInfo) menuInfo;
 
-	private final Handler mHandler = new Handler();
+            if (INVALID_ID != adapterMenuInfo.id) {
+                getMenuInflater().inflate(R.menu.context, menu);
 
-	private final Runnable mUpdateProgressRunnable = new Runnable() {
-		@Override
-		public void run() {
-			setProgressBarIndeterminateVisibility(OperationManager.getInstance().isInOperation());
-		}
-	};
+                TextView tv = (TextView) adapterMenuInfo.targetView;
 
-	@Override
-	public void onOperationStarted(Uri uri) {
-		mHandler.removeCallbacks(mUpdateProgressRunnable);
-		mHandler.post(mUpdateProgressRunnable);
-	}
+                menu.setHeaderTitle(tv.getText());
+            }
+        }
+    }
 
-	@Override
-	public void onOperationEnded(Uri uri) {
-		mHandler.removeCallbacks(mUpdateProgressRunnable);
-		mHandler.post(mUpdateProgressRunnable);
-	}
+
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) item.getMenuInfo();
+
+        if (INVALID_ID != menuInfo.id) {
+            switch (item.getItemId()) {
+                case R.id.open:
+                    startMainBookmark(menuInfo.position);
+
+                    return true;
+
+                case R.id.delete:
+                    deleteBookmark(menuInfo.position);
+
+                    return true;
+            }
+        }
+
+        return super.onContextItemSelected(item);
+    }
+
+    private final Handler mHandler = new Handler();
+
+    private final Runnable mUpdateProgressRunnable = new Runnable() {
+        @Override
+        public void run() {
+            setProgressBarIndeterminateVisibility(OperationManager.getInstance().isInOperation());
+        }
+    };
+
+    @Override
+    public void onOperationStarted(Uri uri) {
+        mHandler.removeCallbacks(mUpdateProgressRunnable);
+        mHandler.post(mUpdateProgressRunnable);
+    }
+
+    @Override
+    public void onOperationEnded(Uri uri) {
+        mHandler.removeCallbacks(mUpdateProgressRunnable);
+        mHandler.post(mUpdateProgressRunnable);
+    }
 }

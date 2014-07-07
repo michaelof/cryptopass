@@ -25,11 +25,12 @@ public class ActionService extends IntentService {
 			values.put(Data.ARGS_URL, url);
 			values.put(Data.ARGS_LENGTH, length);
 
-			Object obj = OperationManager.getInstance().operationStarted(Data.URI_BOOKMARKS);
+            Uri bookmarksUri = Data.makeBookmarksUri(this);
+			Object obj = OperationManager.getInstance().operationStarted(bookmarksUri);
 			try {
-				getContentResolver().insert(Data.URI_BOOKMARKS, values);
+				getContentResolver().insert(bookmarksUri, values);
 			} finally {
-				OperationManager.getInstance().operationEnded(Data.URI_BOOKMARKS, obj);
+				OperationManager.getInstance().operationEnded(bookmarksUri, obj);
 			}
 
 		} else if (Data.ACTION_DELETE.equals(action)) {

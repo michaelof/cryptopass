@@ -1,5 +1,6 @@
 package krasilnikov.alexey.cryptopass.v11;
 
+import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.ListFragment;
 import android.app.LoaderManager;
@@ -10,6 +11,7 @@ import android.content.Loader;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.SparseBooleanArray;
 import android.view.*;
@@ -18,6 +20,7 @@ import android.widget.ListView;
 import krasilnikov.alexey.cryptopass.*;
 import krasilnikov.alexey.cryptopass.data.BookmarksHelper;
 
+@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class BookmarksFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final int INVALID_ID = -1;
 
@@ -149,7 +152,9 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
 		Cursor cursor = mBookmarksAdapter.getCursor();
 
 		if (listPosition > 0) {
-			Intent intent = new Intent(Data.ACTION_DELETE, BookmarksHelper.getBookmarkUri(cursor, listPosition - 1));
+            Uri uri = BookmarksHelper.getBookmarkUri(getActivity(), cursor, listPosition - 1);
+			Intent intent = new Intent(Data.ACTION_DELETE, uri);
+            intent.setClass(getActivity(), ActionService.class);
 
 			getActivity().startService(intent);
 		}
@@ -159,7 +164,7 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
 		Cursor cursor = mBookmarksAdapter.getCursor();
 
 		if (listPosition > 0) {
-			Uri data = BookmarksHelper.getBookmarkUri(cursor, listPosition - 1);
+			Uri data = BookmarksHelper.getBookmarkUri(getActivity(), cursor, listPosition - 1);
 
 			getListener().showBookmark(data);
 		} else {
@@ -174,19 +179,19 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
 
 	private static class BookmarkLoader extends CursorLoader {
 		public BookmarkLoader(Context context) {
-			super(context, Data.URI_BOOKMARKS, Data.BOOKMARKS_PROJECTION, null, null, null);
+			super(context, Data.makeBookmarksUri(context), Data.BOOKMARKS_PROJECTION, null, null, null);
 		}
 
 		private ContentObserver mDataObserver;
 
-		@Override
+        @Override
 		protected void onStartLoading() {
 			super.onStartLoading();
 
 			if (mDataObserver == null) {
 				mDataObserver = new ForceLoadContentObserver();
 
-				getContext().getContentResolver().registerContentObserver(Data.URI_BOOKMARKS, true, mDataObserver);
+				getContext().getContentResolver().registerContentObserver(getUri(), true, mDataObserver);
 			}
 		}
 

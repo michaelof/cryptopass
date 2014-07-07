@@ -18,7 +18,7 @@ public class DataProvider extends ContentProvider {
 
 	@Override
 	public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-		if (uri.equals(Data.URI_BOOKMARKS)) {
+		if (uri.equals(Data.makeBookmarksUri(getContext()))) {
 			return mBookmarksHelper.queryBookmarks(projection);
 		}
 
@@ -38,9 +38,9 @@ public class DataProvider extends ContentProvider {
 
 		mBookmarksHelper.saveBookmark(username, url, length != null ? length : Data.DEFAULT_LENGTH);
 
-		getContext().getContentResolver().notifyChange(Data.URI_BOOKMARKS, null);
+		getContext().getContentResolver().notifyChange(Data.makeBookmarksUri(getContext()), null);
 
-		return Data.makeBookmarkUri(username, url);
+		return Data.makeBookmarkUri(getContext(), username, url);
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class DataProvider extends ContentProvider {
 
 		int deleted = mBookmarksHelper.deleteBookmark(username, url);
 
-		getContext().getContentResolver().notifyChange(Data.URI_BOOKMARKS, null);
+		getContext().getContentResolver().notifyChange(Data.makeBookmarksUri(getContext()), null);
 
 		return deleted;
 	}

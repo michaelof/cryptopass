@@ -28,9 +28,12 @@ public class BookmarksHelper {
 		dbHelper.getWritableDatabase().insert(DatabaseHelper.BOOKMARKS_TABLE, null, values);
 	}
 
-	public static Uri getBookmarkUri(final Cursor c, final int position) {
+	public static Uri getBookmarkUri(Context context, final Cursor c, final int position) {
 		if (c.moveToPosition(position)) {
-			return Data.makeBookmarkUri(c.getString(Data.USERNAME_COLUMN), c.getString(Data.URL_COLUMN), c.getInt(Data.LENGTH_COLUMN));
+            String username = c.getString(Data.USERNAME_COLUMN);
+            String url = c.getString(Data.URL_COLUMN);
+            int length = c.getInt(Data.LENGTH_COLUMN);
+			return Data.makeBookmarkUri(context, username, url, length);
 		}
 
 		return null;

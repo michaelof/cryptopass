@@ -135,7 +135,7 @@ public final class MainActivity extends Activity implements TextWatcher {
 			ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
 			clipboard.setText(activeResult.substring(0, length));
 
-			Intent saveIntent = new Intent(Data.ACTION_SAVE, Data.URI_BOOKMARKS);
+			Intent saveIntent = new Intent(Data.ACTION_SAVE, Data.makeBookmarksUri(this));
 
 			saveIntent.putExtra(Data.ARGS_URL, bookmark.url);
 			saveIntent.putExtra(Data.ARGS_USERNAME, bookmark.username);

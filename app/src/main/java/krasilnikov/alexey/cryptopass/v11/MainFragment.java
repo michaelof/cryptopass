@@ -1,9 +1,11 @@
 package krasilnikov.alexey.cryptopass.v11;
 
+import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.app.LoaderManager;
 import android.content.*;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.SpannableString;
@@ -18,11 +20,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import krasilnikov.alexey.cryptopass.ActionService;
 import krasilnikov.alexey.cryptopass.Bookmark;
 import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.PBKDF2Args;
 import krasilnikov.alexey.cryptopass.R;
 
+@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class MainFragment extends Fragment implements TextWatcher, IResultHandler, LoaderManager.LoaderCallbacks<GenerateLoaderResult> {
 	public static MainFragment instantiate(final Uri data) {
 		MainFragment fragment = new MainFragment();
@@ -159,8 +164,9 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
 			ClipboardManager clipboardManager = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
 			clipboardManager.setPrimaryClip(ClipData.newPlainText("generated", activeResult.substring(0, length)));
 
-			Intent saveIntent = new Intent(Data.ACTION_SAVE, Data.URI_BOOKMARKS);
+			Intent saveIntent = new Intent(Data.ACTION_SAVE, Data.makeBookmarksUri(getActivity()));
 
+            saveIntent.setClass(getActivity(), ActionService.class);
 			saveIntent.putExtra(Data.ARGS_URL, argsForKeyGenerated.url);
 			saveIntent.putExtra(Data.ARGS_USERNAME, argsForKeyGenerated.username);
 			saveIntent.putExtra(Data.ARGS_LENGTH, length);

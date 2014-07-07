@@ -1,8 +1,10 @@
 package krasilnikov.alexey.cryptopass.v11;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.MenuItem;
@@ -11,13 +13,25 @@ import android.view.WindowManager;
 import krasilnikov.alexey.cryptopass.OperationManager;
 import krasilnikov.alexey.cryptopass.R;
 
+@TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public class StartActivity extends Activity implements BookmarksFragment.IListener, OperationManager.OperationListener {
 	private static final String FIRST_START = "firstStart";
 
 	private static final String BOOKMARKS_TAG = "bookmarks";
 	private static final String MAIN_TAG = "main";
 
-	@Override
+    private void handleIntent(Intent intent) {
+        boolean firstStart = intent.getBooleanExtra(FIRST_START, false);
+
+        if (firstStart) {
+            getFragmentManager().beginTransaction().replace(R.id.rootView, new MainFragment(), MAIN_TAG).commit();
+        } else {
+            getFragmentManager().beginTransaction().replace(R.id.rootView, new BookmarksFragment(), BOOKMARKS_TAG).commit();
+        }
+
+    }
+
+    @Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
@@ -30,19 +44,18 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
 
 		if (savedInstanceState == null) {
-			Intent intent = getIntent();
-
-			boolean firstStart = intent.getBooleanExtra(FIRST_START, false);
-
-			if (firstStart) {
-				getFragmentManager().beginTransaction().add(R.id.rootView, new MainFragment(), MAIN_TAG).commit();
-			} else {
-				getFragmentManager().beginTransaction().add(R.id.rootView, new BookmarksFragment(), BOOKMARKS_TAG).commit();
-			}
+			handleIntent(getIntent());
 		}
 	}
 
-	@Override
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+
+        handleIntent(intent);
+    }
+
+    @Override
 	protected void onResume() {
 		super.onResume();
 
@@ -76,12 +89,11 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
 	public void noBookmarks() {
 		Intent intent = new Intent(this, StartActivity.class);
 		intent.putExtra(FIRST_START, true);
-		intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		startActivity(intent);
-		overridePendingTransition(0, 0);
 	}
 
-	@Override
+    @Override
 	public void showBookmark(Uri data) {
 		final MainFragment fragment = MainFragment.instantiate(data);
 
