@@ -1,9 +1,7 @@
-syntax: glob
-bin/
-gen/
+.gradle
+/local.properties
 .idea/
-proguard.cfg
-default.properties
-.project
-.classpath
-project.properties
+.DS_Store
+build/
+gradlew
+local.properties
