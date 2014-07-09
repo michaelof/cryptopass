@@ -35,7 +35,6 @@
 
         <activity android:name="krasilnikov.alexey.cryptopass.v14.StartActivity"
                   android:label="@string/app_name"
-                  android:launchMode="singleTop"
                   android:enabled="@bool/atLeastIceScreamSandwich">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
