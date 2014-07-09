@@ -1,0 +1,4 @@
+<resources>
+    <bool name="atMostHoneycomb">false</bool>
+    <bool name="atLeastIceScreamSandwich">true</bool>
+</resources>

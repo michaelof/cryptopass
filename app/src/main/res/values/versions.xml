@@ -1,4 +1,4 @@
 <resources>
-    <bool name="preHoneycomb">true</bool>
-    <bool name="postHoneycomb">false</bool>
+    <bool name="atMostHoneycomb">true</bool>
+    <bool name="atLeastIceScreamSandwich">false</bool>
 </resources>

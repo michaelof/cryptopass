@@ -18,6 +18,7 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import krasilnikov.alexey.cryptopass.ActionService;
 import krasilnikov.alexey.cryptopass.BookmarksAdapter;
 import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.OperationManager;
@@ -119,6 +120,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
         if (listPosition > 0) {
             Uri uri = BookmarksHelper.getBookmarkUri(this, bookmarksCursor, listPosition - 1);
             Intent intent = new Intent(Data.ACTION_DELETE, uri);
+            intent.setClass(this, ActionService.class);
 
             startService(intent);
         }

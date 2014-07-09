@@ -1,13 +1,17 @@
-package krasilnikov.alexey.cryptopass.v11;
+package krasilnikov.alexey.cryptopass.v14;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Loader;
 import android.os.AsyncTask;
+import android.os.Build;
+
 import krasilnikov.alexey.cryptopass.Bookmark;
 import krasilnikov.alexey.cryptopass.IIterationsListener;
 import krasilnikov.alexey.cryptopass.PBKDF2Args;
 import krasilnikov.alexey.cryptopass.PasswordMaker;
 
+@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 class GenerateLoader extends Loader<GenerateLoaderResult> implements IIterationsListener {
 
     static class SuccessResult extends GenerateLoaderResult {

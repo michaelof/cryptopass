@@ -61,6 +61,8 @@ public class Data {
     public static final String ACTION_SAVE = "krasilnikov.alexey.cryptopass.SAVE";
     public static final String ACTION_DELETE = "krasilnikov.alexey.cryptopass.DELETE";
     public static final String ACTION_SHOW = "krasilnikov.alexey.cryptopass.SHOW";
+    public static final String ACTION_IMPORT = "krasilnikov.alexey.cryptopass.IMPORT";
+    public static final String ACTION_EXPORT = "krasilnikov.alexey.cryptopass.EXPORT";
 
     public static final String ARGS_URL = "url";
     public static final String ARGS_USERNAME = "username";

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="title_export_progress">Exporting…</string>
+    <string name="title_export_complete">Export complete.</string>
+
+    <string name="menu_import">Import bookmarks</string>
+    <string name="menu_export">Export bookmarks</string>
+    <string name="title_import_progress">Importing…</string>
+</resources>

@@ -1,4 +1,4 @@
-package krasilnikov.alexey.cryptopass.v11;
+package krasilnikov.alexey.cryptopass.v14;
 
 import android.annotation.TargetApi;
 import android.app.ActionBar;
@@ -20,7 +20,7 @@ import android.widget.ListView;
 import krasilnikov.alexey.cryptopass.*;
 import krasilnikov.alexey.cryptopass.data.BookmarksHelper;
 
-@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class BookmarksFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
 	private static final int INVALID_ID = -1;
 
@@ -53,7 +53,7 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
 		return view;
 	}
 
-	@Override
+    @Override
 	public void onViewCreated(View view, Bundle savedInstanceState) {
 		super.onViewCreated(view, savedInstanceState);
 
@@ -79,6 +79,7 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
 		final ActionBar actionBar = getActivity().getActionBar();
 
 		actionBar.setDisplayHomeAsUpEnabled(false);
+        actionBar.setHomeButtonEnabled(false);
 	}
 
 	private final AbsListView.MultiChoiceModeListener mMultiChoiceModeListener = new AbsListView.MultiChoiceModeListener() {

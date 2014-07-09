@@ -1,4 +1,4 @@
-package krasilnikov.alexey.cryptopass.v11;
+package krasilnikov.alexey.cryptopass.v14;
 
 import android.annotation.TargetApi;
 import android.app.Fragment;
@@ -26,8 +26,9 @@ import krasilnikov.alexey.cryptopass.Bookmark;
 import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.PBKDF2Args;
 import krasilnikov.alexey.cryptopass.R;
+import krasilnikov.alexey.cryptopass.Version;
 
-@TargetApi(Build.VERSION_CODES.HONEYCOMB)
+@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class MainFragment extends Fragment implements TextWatcher, IResultHandler, LoaderManager.LoaderCallbacks<GenerateLoaderResult> {
 	public static MainFragment instantiate(final Uri data) {
 		MainFragment fragment = new MainFragment();
@@ -46,9 +47,9 @@ public class MainFragment extends Fragment implements TextWatcher, IResultHandle
 	public MainFragment() {
 		super();
 
-		//На самом деле в этом нет необходимости, но из-за некорректной работы Loaderов на
-		//Honeycomb так лучше.
-		setRetainInstance(true);
+        if (Version.isHoneycomb()) {
+            setRetainInstance(true);
+        }
 	}
 
 	boolean wasPaused = false;
