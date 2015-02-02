@@ -15,8 +15,10 @@ import android.text.TextUtils;
 import android.util.JsonReader;
 import android.util.JsonWriter;
 import android.util.Log;
+import android.widget.Toast;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -63,7 +65,7 @@ public class ActionService extends IntentService {
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     private void writeBookmarks(JsonWriter writer) throws IOException {
         writer.beginArray();
         Cursor c = getContentResolver().query(Data.makeBookmarksUri(this),
@@ -84,7 +86,7 @@ public class ActionService extends IntentService {
         writer.endArray();
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     private String getFileDisplayName(Uri destination) {
         String[] columns = new String[]{OpenableColumns.DISPLAY_NAME};
         Cursor c = getContentResolver().query(destination, columns, null, null, null);
@@ -101,7 +103,7 @@ public class ActionService extends IntentService {
         return null;
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     private Notification makeProgressNotification(int title, String displayName) {
         Notification.Builder b = new Notification.Builder(this);
         b.setSmallIcon(R.drawable.icon);
@@ -110,10 +112,10 @@ public class ActionService extends IntentService {
             b.setContentText(displayName);
         }
         b.setProgress(100, 0, true);
-        return b.build();
+        return b.getNotification();
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     private Notification makeCompleteExportNotification(String displayName) {
         Notification.Builder b = new Notification.Builder(this);
         b.setSmallIcon(R.drawable.icon);
@@ -121,10 +123,10 @@ public class ActionService extends IntentService {
         if (!TextUtils.isEmpty(displayName)) {
             b.setContentText(displayName);
         }
-        return b.build();
+        return b.getNotification();
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     private void exportBookmarks(Intent intent) {
         Uri destination = intent.getData();
 
@@ -153,12 +155,13 @@ public class ActionService extends IntentService {
         } catch (Exception e) {
             stopForeground(true);
             Log.e("cryptopass", e.getMessage(), e);
+            Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         } finally {
             OperationManager.getInstance().operationEnded(destination, obj);
         }
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     private void readBookmarks(JsonReader reader) throws IOException {
         reader.beginArray();
 
@@ -170,7 +173,7 @@ public class ActionService extends IntentService {
             String username = "";
             int length = Data.DEFAULT_LENGTH;
 
-            while(reader.hasNext()) {
+            while (reader.hasNext()) {
                 String name = reader.nextName();
                 if ("url".equals(name)) {
                     url = reader.nextString();
@@ -196,7 +199,7 @@ public class ActionService extends IntentService {
         reader.endArray();
     }
 
-    @TargetApi(Build.VERSION_CODES.KITKAT)
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     private void importBookmarks(Intent intent) {
         Uri source = intent.getData();
 
@@ -219,6 +222,7 @@ public class ActionService extends IntentService {
             }
         } catch (Exception e) {
             Log.e("cryptopass", e.getMessage(), e);
+            Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         } finally {
             stopForeground(true);
             OperationManager.getInstance().operationEnded(source, obj);

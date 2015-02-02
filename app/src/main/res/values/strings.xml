@@ -16,4 +16,10 @@
     <string name="cancel">Cancel</string>
 
     <string name="selected">Selected: %d</string>
+
+    <string name="title_export_progress">Exporting…</string>
+    <string name="title_export_complete">Export complete.</string>
+
+    <string name="oi_import_bookmarks">Import bookmarks (OI FileManager)</string>
+    <string name="oi_export_bookmarks">Export bookmarks (OI FileManager)</string>
 </resources>
