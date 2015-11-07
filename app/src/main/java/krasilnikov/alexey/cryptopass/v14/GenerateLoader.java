@@ -7,12 +7,12 @@ import android.os.AsyncTask;
 import android.os.Build;
 
 import krasilnikov.alexey.cryptopass.Bookmark;
-import krasilnikov.alexey.cryptopass.IIterationsListener;
+import krasilnikov.alexey.cryptopass.IterationsListener;
 import krasilnikov.alexey.cryptopass.PBKDF2Args;
 import krasilnikov.alexey.cryptopass.PasswordMaker;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-class GenerateLoader extends Loader<GenerateLoaderResult> implements IIterationsListener {
+class GenerateLoader extends Loader<GenerateLoaderResult> implements IterationsListener {
 
     static class SuccessResult extends GenerateLoaderResult {
         private final Bookmark args;
@@ -23,7 +23,7 @@ class GenerateLoader extends Loader<GenerateLoaderResult> implements IIterations
             result = res;
         }
 
-        void result(IResultHandler handler) {
+        void result(ResultHandler handler) {
             handler.complete(args, result);
         }
     }
@@ -35,13 +35,13 @@ class GenerateLoader extends Loader<GenerateLoaderResult> implements IIterations
             exception = ex;
         }
 
-        void result(IResultHandler handler) {
+        void result(ResultHandler handler) {
             handler.exception(exception);
         }
     }
 
     static class EmptyResult extends GenerateLoaderResult {
-        void result(IResultHandler handler) {
+        void result(ResultHandler handler) {
             handler.empty();
         }
     }

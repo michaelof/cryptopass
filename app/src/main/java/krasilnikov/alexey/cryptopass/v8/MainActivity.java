@@ -5,7 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.*;
+import android.text.ClipboardManager;
+import android.text.Editable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.TextWatcher;
 import android.text.style.TextAppearanceSpan;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -14,268 +18,269 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
 import krasilnikov.alexey.cryptopass.Bookmark;
-import krasilnikov.alexey.cryptopass.PBKDF2Args;
 import krasilnikov.alexey.cryptopass.Data;
+import krasilnikov.alexey.cryptopass.PBKDF2Args;
 import krasilnikov.alexey.cryptopass.R;
 
 public final class MainActivity extends Activity implements TextWatcher {
-	private Loader activeLoader;
+    private Loader mActiveLoader;
 
-	void initLoader() {
-		Object obj = getLastNonConfigurationInstance();
-		if (obj instanceof Loader) {
-			activeLoader = (Loader) obj;
-		}
+    void initLoader() {
+        Object obj = getLastNonConfigurationInstance();
+        if (obj instanceof Loader) {
+            mActiveLoader = (Loader) obj;
+        }
 
-		if (activeLoader == null) {
-			activeLoader = new Loader();
-		}
+        if (mActiveLoader == null) {
+            mActiveLoader = new Loader();
+        }
 
-		activeLoader.onInit(this);
-	}
+        mActiveLoader.onInit(this);
+    }
 
-	private Button resultButton;
-	private EditText secretEdit;
-	private EditText usernameEdit;
-	private EditText urlEdit;
-	private SeekBar lengthSeek;
-	private TextView lengthText;
+    private Button mResultButton;
+    private EditText mSecretEdit;
+    private EditText mUsernameEdit;
+    private EditText mUrlEdit;
+    private SeekBar mLengthSeek;
+    private TextView mLengthText;
 
-	private TextAppearanceSpan subTitleAppearance;
+    private TextAppearanceSpan mSubTitleAppearance;
 
-	private boolean userInput = true;
-	private boolean userInteractive = false;
+    private boolean mUserInput = true;
+    private boolean mUserInteractive = false;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-		getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
 
-		setContentView(R.layout.main);
+        setContentView(R.layout.main);
 
-		subTitleAppearance = new TextAppearanceSpan(this, android.R.style.TextAppearance_Small_Inverse);
+        mSubTitleAppearance = new TextAppearanceSpan(this, android.R.style.TextAppearance_Small_Inverse);
 
-		secretEdit = (EditText) findViewById(R.id.secretEdit);
-		usernameEdit = (EditText) findViewById(R.id.usernameEdit);
-		urlEdit = (EditText) findViewById(R.id.urlEdit);
+        mSecretEdit = (EditText) findViewById(R.id.secretEdit);
+        mUsernameEdit = (EditText) findViewById(R.id.usernameEdit);
+        mUrlEdit = (EditText) findViewById(R.id.urlEdit);
 
-		lengthSeek = (SeekBar) findViewById(R.id.lengthSeek);
-		lengthText = (TextView) findViewById(R.id.lengthText);
+        mLengthSeek = (SeekBar) findViewById(R.id.lengthSeek);
+        mLengthText = (TextView) findViewById(R.id.lengthText);
 
-		resultButton = (Button) findViewById(R.id.passBtn);
+        mResultButton = (Button) findViewById(R.id.passBtn);
 
-		Intent startIntent = getIntent();
+        Intent startIntent = getIntent();
 
-		Uri data = startIntent.getData();
-		if (data != null) {
-			usernameEdit.setText(Data.getUsername(data));
-			urlEdit.setText(Data.getUrl(data));
-			lengthSeek.setProgress(Data.getLength(data) - 8);
-		}
+        Uri data = startIntent.getData();
+        if (data != null) {
+            mUsernameEdit.setText(Data.getUsername(data));
+            mUrlEdit.setText(Data.getUrl(data));
+            mLengthSeek.setProgress(Data.getLength(data) - 8);
+        }
 
-		if (urlEdit.getText().length() == 0) {
-			urlEdit.requestFocus();
-		}
+        if (mUrlEdit.getText().length() == 0) {
+            mUrlEdit.requestFocus();
+        }
 
-		secretEdit.addTextChangedListener(this);
-		usernameEdit.addTextChangedListener(this);
-		urlEdit.addTextChangedListener(this);
+        mSecretEdit.addTextChangedListener(this);
+        mUsernameEdit.addTextChangedListener(this);
+        mUrlEdit.addTextChangedListener(this);
 
-		resultButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				resultButtonClicked();
-			}
-		});
+        mResultButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                resultButtonClicked();
+            }
+        });
 
-		updateLength();
+        updateLength();
 
-		lengthSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				if (fromUser) {
-					updateLength();
-				}
-			}
+        mLengthSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {
+                    updateLength();
+                }
+            }
 
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-			}
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
 
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-			}
-		});
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
 
-		initLoader();
-	}
+        initLoader();
+    }
 
-	protected int getPasswordLength() {
-		return lengthSeek.getProgress() + 8;
-	}
+    protected int getPasswordLength() {
+        return mLengthSeek.getProgress() + 8;
+    }
 
-	protected void updateLength() {
-		int length = getPasswordLength();
-		String str = String.format("%02d", length);
+    protected void updateLength() {
+        int length = getPasswordLength();
+        String str = String.format("%02d", length);
 
-		lengthText.setText(str);
-
-		if (activeResult != null) {
-			resultButtonResult(activeResult, length);
-		}
-	}
-
-	protected void resultButtonClicked() {
-		Bookmark bookmark = activeLoader.lastBookmark();
-
-		if (activeResult != null) {
-			int length = getPasswordLength();
-			ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-			clipboard.setText(activeResult.substring(0, length));
+        mLengthText.setText(str);
+
+        if (activeResult != null) {
+            resultButtonResult(activeResult, length);
+        }
+    }
+
+    protected void resultButtonClicked() {
+        Bookmark bookmark = mActiveLoader.lastBookmark();
+
+        if (activeResult != null) {
+            int length = getPasswordLength();
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboard.setText(activeResult.substring(0, length));
 
-			Intent saveIntent = new Intent(Data.ACTION_SAVE, Data.makeBookmarksUri(this));
+            Intent saveIntent = new Intent(Data.ACTION_SAVE, Data.makeBookmarksUri(this));
 
-			saveIntent.putExtra(Data.ARGS_URL, bookmark.url);
-			saveIntent.putExtra(Data.ARGS_USERNAME, bookmark.username);
-			saveIntent.putExtra(Data.ARGS_LENGTH, length);
+            saveIntent.putExtra(Data.ARGS_URL, bookmark.url);
+            saveIntent.putExtra(Data.ARGS_USERNAME, bookmark.username);
+            saveIntent.putExtra(Data.ARGS_LENGTH, length);
 
-			startService(saveIntent);
-		}
-	}
+            startService(saveIntent);
+        }
+    }
 
-	protected void onDestroy() {
-		super.onDestroy();
+    protected void onDestroy() {
+        super.onDestroy();
 
-		activeLoader.onActivityDestroy();
-	}
+        mActiveLoader.onActivityDestroy();
+    }
 
-	protected void onPause() {
-		userInteractive = false;
-
-		activeLoader.onActivityPause();
+    protected void onPause() {
+        mUserInteractive = false;
+
+        mActiveLoader.onActivityPause();
 
-		super.onPause();
-	}
+        super.onPause();
+    }
 
-	protected void onResume() {
-		super.onResume();
+    protected void onResume() {
+        super.onResume();
 
-		activeLoader.onActivityResume();
+        mActiveLoader.onActivityResume();
 
-		userInteractive = true;
-	}
+        mUserInteractive = true;
+    }
 
-	public Object onRetainNonConfigurationInstance() {
-		return activeLoader.onActivityGetRetainState();
-	}
-
-	protected void updateResult() {
-		updateResult(getInputs());
-	}
-
-	protected void updateResult(PBKDF2Args args) {
-		activeLoader.restart(args);
-	}
-
-	public void working() {
-		resultButtonWorking();
-	}
-
-	public void complete(String result) {
-		resultButtonResult(result);
-	}
-
-	public void emptySecret() {
-		userInput = false;
-		try {
-			secretEdit.setText(null);
-			resultButtonEmpty();
-		} finally {
-			userInput = true;
-		}
-	}
-
-	public void restoreSecret(String secret, String result) {
-		userInput = false;
-		try {
-			secretEdit.setText(secret);
-			resultButtonResult(result);
-		} finally {
-			userInput = true;
-		}
-	}
-
-	public void empty() {
-		resultButtonEmpty();
-	}
-
-	public void exception(Exception ex) {
-		resultButtonError(ex.getMessage());
-	}
-
-	private void resultButtonWorking() {
-		activeResult = null;
-		resultButton.setText(R.string.working);
-		resultButton.setEnabled(false);
-	}
-
-	private String activeResult;
-
-	private void resultButtonResult(String result) {
-		resultButtonResult(result, getPasswordLength());
-	}
-
-	private void resultButtonResult(String result, int length) {
-		activeResult = result;
-
-		String str = getString(R.string.result, result.substring(0, length));
-
-		final int start = str.indexOf("\n");
-		final int end = str.length();
-
-		SpannableString span = new SpannableString(str);
-		span.setSpan(subTitleAppearance, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-		resultButton.setText(span);
-		resultButton.setEnabled(true);
-	}
-
-	private void resultButtonEmpty() {
-		activeResult = null;
-		resultButton.setText(R.string.working_secret_empty);
-		resultButton.setEnabled(false);
-	}
-
-	private void resultButtonError(String msg) {
-		activeResult = null;
-		resultButton.setText(msg);
-		resultButton.setEnabled(false);
-	}
-
-	private PBKDF2Args getInputs() {
-		PBKDF2Args args = new PBKDF2Args();
-
-		args.password = secretEdit.getText().toString();
-		args.username = usernameEdit.getText().toString();
-		args.url = urlEdit.getText().toString();
-
-		return args;
-	}
-
-	@Override
-	public void afterTextChanged(Editable s) {
-		if (userInput && userInteractive) {
-			updateResult();
-		}
-	}
-
-	@Override
-	public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-	}
-
-	@Override
-	public void onTextChanged(CharSequence s, int start, int before, int count) {
-	}
+    public Object onRetainNonConfigurationInstance() {
+        return mActiveLoader.onActivityGetRetainState();
+    }
+
+    protected void updateResult() {
+        updateResult(getInputs());
+    }
+
+    protected void updateResult(PBKDF2Args args) {
+        mActiveLoader.restart(args);
+    }
+
+    public void working() {
+        resultButtonWorking();
+    }
+
+    public void complete(String result) {
+        resultButtonResult(result);
+    }
+
+    public void emptySecret() {
+        mUserInput = false;
+        try {
+            mSecretEdit.setText(null);
+            resultButtonEmpty();
+        } finally {
+            mUserInput = true;
+        }
+    }
+
+    public void restoreSecret(String secret, String result) {
+        mUserInput = false;
+        try {
+            mSecretEdit.setText(secret);
+            resultButtonResult(result);
+        } finally {
+            mUserInput = true;
+        }
+    }
+
+    public void empty() {
+        resultButtonEmpty();
+    }
+
+    public void exception(Exception ex) {
+        resultButtonError(ex.getMessage());
+    }
+
+    private void resultButtonWorking() {
+        activeResult = null;
+        mResultButton.setText(R.string.working);
+        mResultButton.setEnabled(false);
+    }
+
+    private String activeResult;
+
+    private void resultButtonResult(String result) {
+        resultButtonResult(result, getPasswordLength());
+    }
+
+    private void resultButtonResult(String result, int length) {
+        activeResult = result;
+
+        String str = getString(R.string.result, result.substring(0, length));
+
+        final int start = str.indexOf("\n");
+        final int end = str.length();
+
+        SpannableString span = new SpannableString(str);
+        span.setSpan(mSubTitleAppearance, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+        mResultButton.setText(span);
+        mResultButton.setEnabled(true);
+    }
+
+    private void resultButtonEmpty() {
+        activeResult = null;
+        mResultButton.setText(R.string.working_secret_empty);
+        mResultButton.setEnabled(false);
+    }
+
+    private void resultButtonError(String msg) {
+        activeResult = null;
+        mResultButton.setText(msg);
+        mResultButton.setEnabled(false);
+    }
+
+    private PBKDF2Args getInputs() {
+        PBKDF2Args args = new PBKDF2Args();
+
+        args.password = mSecretEdit.getText().toString();
+        args.username = mUsernameEdit.getText().toString();
+        args.url = mUrlEdit.getText().toString();
+
+        return args;
+    }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+        if (mUserInput && mUserInteractive) {
+            updateResult();
+        }
+    }
+
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+    }
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+    }
 }

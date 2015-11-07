@@ -28,7 +28,7 @@ import krasilnikov.alexey.cryptopass.data.BookmarksHelper;
 public class StartActivity extends ListActivity implements OnItemClickListener, OperationManager.OperationListener {
     private static final int INVALID_ID = -1;
 
-    private Cursor bookmarksCursor;
+    private Cursor mBookmarksCursor;
 
     /**
      * Called when the activity is first created.
@@ -42,10 +42,10 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
 
         setProgressBarIndeterminateVisibility(false);
 
-        bookmarksCursor = getContentResolver().query(Data.makeBookmarksUri(this), Data.BOOKMARKS_PROJECTION, null, null, null);
-        startManagingCursor(bookmarksCursor);
+        mBookmarksCursor = getContentResolver().query(Data.makeBookmarksUri(this), Data.BOOKMARKS_PROJECTION, null, null, null);
+        startManagingCursor(mBookmarksCursor);
 
-        if (bookmarksCursor.getCount() == 0) {
+        if (mBookmarksCursor.getCount() == 0) {
             startActivity(new Intent(this, MainActivity.class));
             finish();
         } else {
@@ -57,15 +57,15 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
             listView.setOnItemClickListener(this);
             registerForContextMenu(listView);
 
-            setListAdapter(new BookmarksAdapter(this, bookmarksCursor));
+            setListAdapter(new BookmarksAdapter(this, mBookmarksCursor));
         }
     }
 
     private final ContentObserver mBookmarksObserver = new ContentObserver(new Handler()) {
         @Override
         public void onChange(boolean selfChange) {
-            if (bookmarksCursor != null && !bookmarksCursor.isClosed()) {
-                bookmarksCursor.requery();
+            if (mBookmarksCursor != null && !mBookmarksCursor.isClosed()) {
+                mBookmarksCursor.requery();
             }
         }
     };
@@ -90,7 +90,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
     protected void onDestroy() {
         super.onDestroy();
 
-        bookmarksCursor = null;
+        mBookmarksCursor = null;
     }
 
     @Override
@@ -109,7 +109,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
 
     void startMainBookmark(final int listPosition) {
         if (listPosition > 0) {
-            Uri uri = BookmarksHelper.getBookmarkUri(this, bookmarksCursor, listPosition - 1);
+            Uri uri = BookmarksHelper.getBookmarkUri(this, mBookmarksCursor, listPosition - 1);
             Intent intent = new Intent(Data.ACTION_SHOW, uri);
 
             startActivity(intent);
@@ -118,7 +118,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
 
     private void deleteBookmark(final int listPosition) {
         if (listPosition > 0) {
-            Uri uri = BookmarksHelper.getBookmarkUri(this, bookmarksCursor, listPosition - 1);
+            Uri uri = BookmarksHelper.getBookmarkUri(this, mBookmarksCursor, listPosition - 1);
             Intent intent = new Intent(Data.ACTION_DELETE, uri);
             intent.setClass(this, ActionService.class);
 

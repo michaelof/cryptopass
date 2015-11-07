@@ -1,6 +1,6 @@
 package krasilnikov.alexey.cryptopass.v14;
 
 class Loaders {
-	public static int BOOKMARKS_LOADER = 1;
-	public static int RESULT_GENERATE_LOADER = 2;
+    public static int BOOKMARKS_LOADER = 1;
+    public static int RESULT_GENERATE_LOADER = 2;
 }

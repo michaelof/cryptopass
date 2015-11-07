@@ -30,6 +30,13 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     private static final int REQUEST_CODE_IMPORT = 1;
     private static final int REQUEST_CODE_OI_EXPORT = 2;
     private static final int REQUEST_CODE_OI_IMPORT = 3;
+    private final Handler mHandler = new Handler();
+    private final Runnable mUpdateProgressRunnable = new Runnable() {
+        @Override
+        public void run() {
+            setProgressBarIndeterminateVisibility(OperationManager.getInstance().isInOperation());
+        }
+    };
 
     private void handleIntent(Intent intent) {
         boolean firstStart = intent.getBooleanExtra(FIRST_START, false);
@@ -202,15 +209,6 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
 
         getFragmentManager().beginTransaction().replace(R.id.rootView, fragment, MAIN_TAG).addToBackStack(null).commit();
     }
-
-    private final Handler mHandler = new Handler();
-
-    private final Runnable mUpdateProgressRunnable = new Runnable() {
-        @Override
-        public void run() {
-            setProgressBarIndeterminateVisibility(OperationManager.getInstance().isInOperation());
-        }
-    };
 
     @Override
     public void onOperationStarted(Uri uri) {

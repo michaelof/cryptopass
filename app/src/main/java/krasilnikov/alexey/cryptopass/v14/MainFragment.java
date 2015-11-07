@@ -3,7 +3,11 @@ package krasilnikov.alexey.cryptopass.v14;
 import android.annotation.TargetApi;
 import android.app.Fragment;
 import android.app.LoaderManager;
-import android.content.*;
+import android.content.ClipData;
+import android.content.ClipboardManager;
+import android.content.Context;
+import android.content.Intent;
+import android.content.Loader;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -29,313 +33,313 @@ import krasilnikov.alexey.cryptopass.R;
 import krasilnikov.alexey.cryptopass.Version;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-public class MainFragment extends Fragment implements TextWatcher, IResultHandler, LoaderManager.LoaderCallbacks<GenerateLoaderResult> {
-	public static MainFragment instantiate(final Uri data) {
-		MainFragment fragment = new MainFragment();
+public class MainFragment extends Fragment implements TextWatcher, ResultHandler, LoaderManager.LoaderCallbacks<GenerateLoaderResult> {
+    public static MainFragment instantiate(final Uri data) {
+        MainFragment fragment = new MainFragment();
 
-		if (data != null) {
-			final Bundle args = new Bundle();
+        if (data != null) {
+            final Bundle args = new Bundle();
 
-			args.putParcelable("data", data);
+            args.putParcelable("data", data);
 
-			fragment.setArguments(args);
-		}
+            fragment.setArguments(args);
+        }
 
-		return fragment;
-	}
+        return fragment;
+    }
 
-	public MainFragment() {
-		super();
+    public MainFragment() {
+        super();
 
         if (Version.isHoneycomb()) {
             setRetainInstance(true);
         }
-	}
+    }
 
-	boolean wasPaused = false;
+    boolean mWasPaused = false;
 
-	private View containerView;
-	private Button resultButton;
-	private EditText secretEdit;
-	private EditText usernameEdit;
-	private EditText urlEdit;
-	private SeekBar lengthSeek;
-	private TextView lengthText;
+    private View mContainerView;
+    private Button mResultButton;
+    private EditText mSecretEdit;
+    private EditText mUsernameEdit;
+    private EditText mUrlEdit;
+    private SeekBar mLengthSeek;
+    private TextView mLengthText;
 
-	private TextAppearanceSpan subTitleAppearance;
+    private TextAppearanceSpan mSubTitleAppearance;
 
-	private Bookmark argsForKeyGenerated = null;
+    private Bookmark mArgsForKeyGenerated = null;
 
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		return inflater.inflate(R.layout.main, container, false);
-	}
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        return inflater.inflate(R.layout.main, container, false);
+    }
 
-	@Override
-	public void onViewCreated(View view, Bundle savedInstanceState) {
-		super.onViewCreated(view, savedInstanceState);
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
-		containerView = view;
+        mContainerView = view;
 
-		secretEdit = (EditText) view.findViewById(R.id.secretEdit);
-		usernameEdit = (EditText) view.findViewById(R.id.usernameEdit);
-		urlEdit = (EditText) view.findViewById(R.id.urlEdit);
+        mSecretEdit = (EditText) view.findViewById(R.id.secretEdit);
+        mUsernameEdit = (EditText) view.findViewById(R.id.usernameEdit);
+        mUrlEdit = (EditText) view.findViewById(R.id.urlEdit);
 
-		lengthSeek = (SeekBar) view.findViewById(R.id.lengthSeek);
-		lengthText = (TextView) view.findViewById(R.id.lengthText);
+        mLengthSeek = (SeekBar) view.findViewById(R.id.lengthSeek);
+        mLengthText = (TextView) view.findViewById(R.id.lengthText);
 
-		resultButton = (Button) view.findViewById(R.id.passBtn);
+        mResultButton = (Button) view.findViewById(R.id.passBtn);
 
-		subTitleAppearance = new TextAppearanceSpan(getActivity(), android.R.style.TextAppearance_Small);
+        mSubTitleAppearance = new TextAppearanceSpan(getActivity(), android.R.style.TextAppearance_Small);
 
-		if (savedInstanceState == null) {
-			final Bundle args = getArguments();
-			if (args != null) {
-				Uri data = args.getParcelable("data");
+        if (savedInstanceState == null) {
+            final Bundle args = getArguments();
+            if (args != null) {
+                Uri data = args.getParcelable("data");
 
-				if (data != null) {
-					usernameEdit.setText(Data.getUsername(data));
-					urlEdit.setText(Data.getUrl(data));
-					lengthSeek.setProgress(Data.getLength(data) - 8);
-				}
-			}
-		}
+                if (data != null) {
+                    mUsernameEdit.setText(Data.getUsername(data));
+                    mUrlEdit.setText(Data.getUrl(data));
+                    mLengthSeek.setProgress(Data.getLength(data) - 8);
+                }
+            }
+        }
 
-		secretEdit.addTextChangedListener(this);
-		usernameEdit.addTextChangedListener(this);
-		urlEdit.addTextChangedListener(this);
+        mSecretEdit.addTextChangedListener(this);
+        mUsernameEdit.addTextChangedListener(this);
+        mUrlEdit.addTextChangedListener(this);
 
-		resultButton.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View arg0) {
-				resultButtonClicked();
-			}
-		});
+        mResultButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View arg0) {
+                resultButtonClicked();
+            }
+        });
 
-		lengthSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
-			@Override
-			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-				if (fromUser && !wasPaused) {
-					updateLengthText();
-				}
-			}
+        mLengthSeek.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser && !mWasPaused) {
+                    updateLengthText();
+                }
+            }
 
-			@Override
-			public void onStartTrackingTouch(SeekBar seekBar) {
-			}
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+            }
 
-			@Override
-			public void onStopTrackingTouch(SeekBar seekBar) {
-			}
-		});
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+            }
+        });
 
-		updateLengthText();
-	}
+        updateLengthText();
+    }
 
-	@Override
-	public void onStart() {
-		super.onStart();
+    @Override
+    public void onStart() {
+        super.onStart();
 
-		getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
-	}
+        getActivity().getActionBar().setDisplayHomeAsUpEnabled(true);
+    }
 
-	public void onActivityCreated(Bundle savedInstanceState) {
-		super.onActivityCreated(savedInstanceState);
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
 
-		getLoaderManager().initLoader(Loaders.RESULT_GENERATE_LOADER, null, this);
-	}
+        getLoaderManager().initLoader(Loaders.RESULT_GENERATE_LOADER, null, this);
+    }
 
-	protected int getPasswordLength() {
-		return lengthSeek.getProgress() + 8;
-	}
+    protected int getPasswordLength() {
+        return mLengthSeek.getProgress() + 8;
+    }
 
-	protected void updateLengthText() {
-		int length = getPasswordLength();
-		String str = String.format("%02d", length);
+    protected void updateLengthText() {
+        int length = getPasswordLength();
+        String str = String.format("%02d", length);
 
-		lengthText.setText(str);
-		if (activeResult != null) {
-			resultButtonResult(activeResult, length);
-		}
-	}
+        mLengthText.setText(str);
+        if (activeResult != null) {
+            resultButtonResult(activeResult, length);
+        }
+    }
 
-	protected void resultButtonClicked() {
-		if (activeResult != null) {
-			int length = getPasswordLength();
+    protected void resultButtonClicked() {
+        if (activeResult != null) {
+            int length = getPasswordLength();
 
-			ClipboardManager clipboardManager = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
-			clipboardManager.setPrimaryClip(ClipData.newPlainText("generated", activeResult.substring(0, length)));
+            ClipboardManager clipboardManager = (ClipboardManager) getActivity().getSystemService(Context.CLIPBOARD_SERVICE);
+            clipboardManager.setPrimaryClip(ClipData.newPlainText("generated", activeResult.substring(0, length)));
 
-			Intent saveIntent = new Intent(Data.ACTION_SAVE, Data.makeBookmarksUri(getActivity()));
+            Intent saveIntent = new Intent(Data.ACTION_SAVE, Data.makeBookmarksUri(getActivity()));
 
             saveIntent.setClass(getActivity(), ActionService.class);
-			saveIntent.putExtra(Data.ARGS_URL, argsForKeyGenerated.url);
-			saveIntent.putExtra(Data.ARGS_USERNAME, argsForKeyGenerated.username);
-			saveIntent.putExtra(Data.ARGS_LENGTH, length);
+            saveIntent.putExtra(Data.ARGS_URL, mArgsForKeyGenerated.url);
+            saveIntent.putExtra(Data.ARGS_USERNAME, mArgsForKeyGenerated.username);
+            saveIntent.putExtra(Data.ARGS_LENGTH, length);
 
-			getActivity().startService(saveIntent);
-		}
-	}
+            getActivity().startService(saveIntent);
+        }
+    }
 
-	public void onResume() {
-		super.onResume();
+    public void onResume() {
+        super.onResume();
 
-		wasPaused = false;
+        mWasPaused = false;
 
-		View focused = containerView.findFocus();
-		if (focused == null) {
-			if (urlEdit.getText().length() == 0) {
-				urlEdit.requestFocus();
-				focused = urlEdit;
-			} else {
-				secretEdit.requestFocus();
-				focused = secretEdit;
-			}
-		}
+        View focused = mContainerView.findFocus();
+        if (focused == null) {
+            if (mUrlEdit.getText().length() == 0) {
+                mUrlEdit.requestFocus();
+                focused = mUrlEdit;
+            } else {
+                mSecretEdit.requestFocus();
+                focused = mSecretEdit;
+            }
+        }
 
-		if (focused instanceof EditText) {
-			InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-			imm.showSoftInput(focused, 0);
-		}
-	}
+        if (focused instanceof EditText) {
+            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(focused, 0);
+        }
+    }
 
-	public void onPause() {
-		wasPaused = true;
+    public void onPause() {
+        mWasPaused = true;
 
-		secretEdit.setText(null);
-		getGenerator().clearArgs();
+        mSecretEdit.setText(null);
+        getGenerator().clearArgs();
 
-		super.onPause();
-	}
+        super.onPause();
+    }
 
-	@Override
-	public void onDestroyView() {
-		super.onDestroyView();
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
 
-		containerView = null;
-		secretEdit = null;
-		usernameEdit = null;
-		urlEdit = null;
+        mContainerView = null;
+        mSecretEdit = null;
+        mUsernameEdit = null;
+        mUrlEdit = null;
 
-		lengthSeek = null;
-		lengthText = null;
+        mLengthSeek = null;
+        mLengthText = null;
 
-		resultButton = null;
-	}
+        mResultButton = null;
+    }
 
-	private GenerateLoader getGenerator() {
-		final LoaderManager loaderManager = getLoaderManager();
+    private GenerateLoader getGenerator() {
+        final LoaderManager loaderManager = getLoaderManager();
 
-		return (GenerateLoader) loaderManager.<GenerateLoaderResult>getLoader(Loaders.RESULT_GENERATE_LOADER);
-	}
+        return (GenerateLoader) loaderManager.<GenerateLoaderResult>getLoader(Loaders.RESULT_GENERATE_LOADER);
+    }
 
-	private void updateResult() {
-		argsForKeyGenerated = null;
+    private void updateResult() {
+        mArgsForKeyGenerated = null;
 
-		PBKDF2Args args = getInputs();
+        PBKDF2Args args = getInputs();
 
-		GenerateLoader loader = getGenerator();
+        GenerateLoader loader = getGenerator();
 
-		loader.setArgs(args);
+        loader.setArgs(args);
 
-		if (args.isEmpty()) {
-			resultButtonEmpty();
-		} else {
-			resultButtonWorking();
-		}
-	}
+        if (args.isEmpty()) {
+            resultButtonEmpty();
+        } else {
+            resultButtonWorking();
+        }
+    }
 
-	private PBKDF2Args getInputs() {
-		PBKDF2Args args = new PBKDF2Args();
+    private PBKDF2Args getInputs() {
+        PBKDF2Args args = new PBKDF2Args();
 
-		args.password = secretEdit.getText().toString();
-		args.username = usernameEdit.getText().toString();
-		args.url = urlEdit.getText().toString();
+        args.password = mSecretEdit.getText().toString();
+        args.username = mUsernameEdit.getText().toString();
+        args.url = mUrlEdit.getText().toString();
 
-		return args;
-	}
+        return args;
+    }
 
-	private String activeResult;
+    private String activeResult;
 
-	private void resultButtonWorking() {
-		activeResult = null;
-		resultButton.setText(R.string.working);
-		resultButton.setEnabled(false);
-	}
+    private void resultButtonWorking() {
+        activeResult = null;
+        mResultButton.setText(R.string.working);
+        mResultButton.setEnabled(false);
+    }
 
-	private void resultButtonResult(String result) {
-		resultButtonResult(result, getPasswordLength());
-	}
+    private void resultButtonResult(String result) {
+        resultButtonResult(result, getPasswordLength());
+    }
 
-	private void resultButtonResult(String result, int length) {
-		activeResult = result;
-		String str = getString(R.string.result, result.substring(0, length));
+    private void resultButtonResult(String result, int length) {
+        activeResult = result;
+        String str = getString(R.string.result, result.substring(0, length));
 
-		final int start = str.indexOf("\n");
-		final int end = str.length();
+        final int start = str.indexOf("\n");
+        final int end = str.length();
 
-		SpannableString span = new SpannableString(str);
-		span.setSpan(subTitleAppearance, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        SpannableString span = new SpannableString(str);
+        span.setSpan(mSubTitleAppearance, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
-		resultButton.setText(span);
-		resultButton.setEnabled(true);
-	}
+        mResultButton.setText(span);
+        mResultButton.setEnabled(true);
+    }
 
-	private void resultButtonEmpty() {
-		activeResult = null;
-		resultButton.setText(R.string.working_secret_empty);
-		resultButton.setEnabled(false);
-	}
+    private void resultButtonEmpty() {
+        activeResult = null;
+        mResultButton.setText(R.string.working_secret_empty);
+        mResultButton.setEnabled(false);
+    }
 
-	private void resultButtonError(String msg) {
-		activeResult = null;
-		resultButton.setText(msg);
-		resultButton.setEnabled(false);
-	}
+    private void resultButtonError(String msg) {
+        activeResult = null;
+        mResultButton.setText(msg);
+        mResultButton.setEnabled(false);
+    }
 
-	@Override
-	public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-	}
+    @Override
+    public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+    }
 
-	@Override
-	public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-	}
+    @Override
+    public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+    }
 
-	@Override
-	public void afterTextChanged(Editable editable) {
-		if (!wasPaused) {
-			updateResult();
-		}
-	}
+    @Override
+    public void afterTextChanged(Editable editable) {
+        if (!mWasPaused) {
+            updateResult();
+        }
+    }
 
-	@Override
-	public Loader<GenerateLoaderResult> onCreateLoader(int id, Bundle bundle) {
-		return new GenerateLoader(getActivity());
-	}
+    @Override
+    public Loader<GenerateLoaderResult> onCreateLoader(int id, Bundle bundle) {
+        return new GenerateLoader(getActivity());
+    }
 
-	@Override
-	public void onLoadFinished(Loader<GenerateLoaderResult> generateLoaderResultLoader, GenerateLoaderResult generateLoaderResult) {
-		generateLoaderResult.result(this);
-	}
+    @Override
+    public void onLoadFinished(Loader<GenerateLoaderResult> generateLoaderResultLoader, GenerateLoaderResult generateLoaderResult) {
+        generateLoaderResult.result(this);
+    }
 
-	@Override
-	public void onLoaderReset(Loader<GenerateLoaderResult> generateLoaderResultLoader) {
-	}
+    @Override
+    public void onLoaderReset(Loader<GenerateLoaderResult> generateLoaderResultLoader) {
+    }
 
-	@Override
-	public void exception(Exception occurredException) {
-		resultButtonError(occurredException.getMessage());
-	}
+    @Override
+    public void exception(Exception occurredException) {
+        resultButtonError(occurredException.getMessage());
+    }
 
-	@Override
-	public void complete(Bookmark args, String result) {
-		resultButtonResult(result);
+    @Override
+    public void complete(Bookmark args, String result) {
+        resultButtonResult(result);
 
-		argsForKeyGenerated = args;
-	}
+        mArgsForKeyGenerated = args;
+    }
 
-	@Override
-	public void empty() {
-		resultButtonEmpty();
-		argsForKeyGenerated = null;
-	}
+    @Override
+    public void empty() {
+        resultButtonEmpty();
+        mArgsForKeyGenerated = null;
+    }
 }
