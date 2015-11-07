@@ -1,0 +1,42 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion '21.1.2'
+    defaultConfig {
+        applicationId 'krasilnikov.alexey.cryptopass'
+        minSdkVersion 8
+        targetSdkVersion 23
+        versionCode 3
+        versionName '1.1'
+
+        testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
+    }
+
+    lintOptions {
+         abortOnError false
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    productFlavors {
+        production {}
+        canary {
+            applicationId 'krasilnikov.alexey.cryptopass.canary'
+        }
+    }
+
+    packagingOptions {
+        exclude 'LICENSE.txt'
+    }
+}
+
+dependencies {
+}
+
+
