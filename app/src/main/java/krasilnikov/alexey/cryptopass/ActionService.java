@@ -25,12 +25,32 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 
+import dagger.Component;
+import krasilnikov.alexey.cryptopass.scope.ServiceScoped;
+
 public class ActionService extends IntentService {
     private static final int NOTIFICATION_EXPORT = 1;
     private static final int NOTIFICATION_IMPORT = 2;
 
+    @ServiceScoped
+    @Component(dependencies = AppComponent.class)
+    public interface ActionServiceComponent {
+        OperationManager getOperationManager();
+    }
+
+    private ActionServiceComponent mActionServiceComponent;
+
     public ActionService() {
         super("cryptopass");
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+        mActionServiceComponent = DaggerActionService_ActionServiceComponent.builder().
+                appComponent(MainApplication.getComponent(this)).
+                build();
     }
 
     private void saveBookmark(Intent intent) {
@@ -45,22 +65,24 @@ public class ActionService extends IntentService {
         values.put(Data.ARGS_LENGTH, length);
 
         Uri bookmarksUri = Data.makeBookmarksUri(this);
-        Object obj = OperationManager.getInstance().operationStarted(bookmarksUri);
+        OperationManager operationManager = mActionServiceComponent.getOperationManager();
+        Object obj = operationManager.operationStarted(bookmarksUri);
         try {
             getContentResolver().insert(bookmarksUri, values);
         } finally {
-            OperationManager.getInstance().operationEnded(bookmarksUri, obj);
+            operationManager.operationEnded(bookmarksUri, obj);
         }
     }
 
     private void deleteBookmark(Intent intent) {
         Uri uri = intent.getData();
 
-        Object obj = OperationManager.getInstance().operationStarted(uri);
+        OperationManager operationManager = mActionServiceComponent.getOperationManager();
+        Object obj = operationManager.operationStarted(uri);
         try {
             getContentResolver().delete(uri, null, null);
         } finally {
-            OperationManager.getInstance().operationEnded(uri, obj);
+            operationManager.operationEnded(uri, obj);
         }
     }
 
@@ -129,7 +151,8 @@ public class ActionService extends IntentService {
     private void exportBookmarks(Intent intent) {
         Uri destination = intent.getData();
 
-        Object obj = OperationManager.getInstance().operationStarted(destination);
+        OperationManager operationManager = mActionServiceComponent.getOperationManager();
+        Object obj = operationManager.operationStarted(destination);
         try {
             String displayName = getFileDisplayName(destination);
 
@@ -156,7 +179,7 @@ public class ActionService extends IntentService {
             Log.e("cryptopass", e.getMessage(), e);
             Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         } finally {
-            OperationManager.getInstance().operationEnded(destination, obj);
+            operationManager.operationEnded(destination, obj);
         }
     }
 
@@ -202,7 +225,8 @@ public class ActionService extends IntentService {
     private void importBookmarks(Intent intent) {
         Uri source = intent.getData();
 
-        Object obj = OperationManager.getInstance().operationStarted(source);
+        OperationManager operationManager = mActionServiceComponent.getOperationManager();
+        Object obj = operationManager.operationStarted(source);
         try {
             String displayName = getFileDisplayName(source);
 
@@ -224,7 +248,7 @@ public class ActionService extends IntentService {
             Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         } finally {
             stopForeground(true);
-            OperationManager.getInstance().operationEnded(source, obj);
+            operationManager.operationEnded(source, obj);
         }
     }
 

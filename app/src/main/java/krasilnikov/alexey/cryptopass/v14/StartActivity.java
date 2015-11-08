@@ -14,10 +14,13 @@ import android.view.Window;
 import android.view.WindowManager;
 
 import krasilnikov.alexey.cryptopass.ActionService;
+import krasilnikov.alexey.cryptopass.AppComponent;
 import krasilnikov.alexey.cryptopass.Data;
+import krasilnikov.alexey.cryptopass.MainApplication;
 import krasilnikov.alexey.cryptopass.OpenIntents;
 import krasilnikov.alexey.cryptopass.OperationManager;
 import krasilnikov.alexey.cryptopass.R;
+import krasilnikov.alexey.cryptopass.scope.ActivityScoped;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class StartActivity extends Activity implements BookmarksFragment.IListener, OperationManager.OperationListener {
@@ -30,11 +33,19 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     private static final int REQUEST_CODE_IMPORT = 1;
     private static final int REQUEST_CODE_OI_EXPORT = 2;
     private static final int REQUEST_CODE_OI_IMPORT = 3;
+
+    @ActivityScoped
+    @dagger.Component(dependencies = AppComponent.class)
+    public interface Component {
+        OperationManager getOperationManager();
+    }
+
+    private Component mComponent;
     private final Handler mHandler = new Handler();
     private final Runnable mUpdateProgressRunnable = new Runnable() {
         @Override
         public void run() {
-            setProgressBarIndeterminateVisibility(OperationManager.getInstance().isInOperation());
+            updateProgress();
         }
     };
 
@@ -51,6 +62,10 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        mComponent = DaggerStartActivity_Component.builder().
+                appComponent(MainApplication.getComponent(this)).
+                build();
 
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
@@ -76,15 +91,19 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     protected void onResume() {
         super.onResume();
 
-        OperationManager.getInstance().subscribe(this);
-        mUpdateProgressRunnable.run();
+        mComponent.getOperationManager().subscribe(this);
+        updateProgress();
+    }
+
+    void updateProgress() {
+        setProgressBarIndeterminateVisibility(mComponent.getOperationManager().isInOperation());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        OperationManager.getInstance().unsubscribe(this);
+        mComponent.getOperationManager().unsubscribe(this);
     }
 
     @Override

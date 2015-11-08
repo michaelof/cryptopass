@@ -19,15 +19,25 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import krasilnikov.alexey.cryptopass.ActionService;
+import krasilnikov.alexey.cryptopass.AppComponent;
 import krasilnikov.alexey.cryptopass.BookmarksAdapter;
 import krasilnikov.alexey.cryptopass.Data;
+import krasilnikov.alexey.cryptopass.MainApplication;
 import krasilnikov.alexey.cryptopass.OperationManager;
 import krasilnikov.alexey.cryptopass.R;
 import krasilnikov.alexey.cryptopass.data.BookmarksHelper;
+import krasilnikov.alexey.cryptopass.scope.ActivityScoped;
 
 public class StartActivity extends ListActivity implements OnItemClickListener, OperationManager.OperationListener {
     private static final int INVALID_ID = -1;
 
+    @ActivityScoped
+    @dagger.Component(dependencies = AppComponent.class)
+    public interface Component {
+        OperationManager getOperationManager();
+    }
+
+    private Component mComponent;
     private Cursor mBookmarksCursor;
 
     /**
@@ -35,8 +45,11 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
      */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
+
+        mComponent = DaggerStartActivity_Component.builder().
+                appComponent(MainApplication.getComponent(this)).
+                build();
 
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
@@ -74,7 +87,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
     protected void onResume() {
         super.onResume();
 
-        OperationManager.getInstance().subscribe(this);
+        mComponent.getOperationManager().subscribe(this);
         getContentResolver().registerContentObserver(Data.makeBookmarksUri(this), false, mBookmarksObserver);
     }
 
@@ -83,7 +96,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
         super.onPause();
 
         getContentResolver().unregisterContentObserver(mBookmarksObserver);
-        OperationManager.getInstance().unsubscribe(this);
+        mComponent.getOperationManager().unsubscribe(this);
     }
 
     @Override
@@ -170,7 +183,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
     private final Runnable mUpdateProgressRunnable = new Runnable() {
         @Override
         public void run() {
-            setProgressBarIndeterminateVisibility(OperationManager.getInstance().isInOperation());
+            setProgressBarIndeterminateVisibility(mComponent.getOperationManager().isInOperation());
         }
     };
 

@@ -5,7 +5,15 @@ import android.net.Uri;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class OperationManager {
+    @Inject
+    public OperationManager() {
+    }
+
     public interface OperationListener {
         void onOperationStarted(Uri uri);
 
@@ -82,16 +90,5 @@ public class OperationManager {
         for (OperationListener listener : mListenersArray) {
             listener.onOperationEnded(uri);
         }
-    }
-
-    private OperationManager() {
-    }
-
-    public static OperationManager getInstance() {
-        return InstanceHolder.mInstance;
-    }
-
-    public static final class InstanceHolder {
-        public static final OperationManager mInstance = new OperationManager();
     }
 }
