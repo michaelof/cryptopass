@@ -2,7 +2,6 @@ package krasilnikov.alexey.cryptopass.v14;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -17,9 +16,10 @@ import krasilnikov.alexey.cryptopass.ActionService;
 import krasilnikov.alexey.cryptopass.AppComponent;
 import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.MainApplication;
-import krasilnikov.alexey.cryptopass.OpenIntents;
 import krasilnikov.alexey.cryptopass.OperationManager;
 import krasilnikov.alexey.cryptopass.R;
+import krasilnikov.alexey.cryptopass.oi.OpenIntentsActivityHelper;
+import krasilnikov.alexey.cryptopass.scope.ActivityModule;
 import krasilnikov.alexey.cryptopass.scope.ActivityScoped;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
@@ -31,13 +31,13 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
 
     private static final int REQUEST_CODE_EXPORT = 0;
     private static final int REQUEST_CODE_IMPORT = 1;
-    private static final int REQUEST_CODE_OI_EXPORT = 2;
-    private static final int REQUEST_CODE_OI_IMPORT = 3;
 
     @ActivityScoped
-    @dagger.Component(dependencies = AppComponent.class)
+    @dagger.Component(dependencies = AppComponent.class, modules = ActivityModule.class)
     public interface Component {
         OperationManager getOperationManager();
+
+        OpenIntentsActivityHelper getOIHelper();
     }
 
     private Component mComponent;
@@ -65,6 +65,7 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
 
         mComponent = DaggerStartActivity_Component.builder().
                 appComponent(MainApplication.getComponent(this)).
+                activityModule(new ActivityModule(this)).
                 build();
 
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
@@ -135,33 +136,6 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
         startActivityForResult(intent, REQUEST_CODE_IMPORT);
     }
 
-    private void tryStartOIFileManager(Intent intent, int requestCode) {
-        try {
-            startActivityForResult(intent, requestCode);
-        } catch (ActivityNotFoundException ex) {
-            Intent marketIntent = new Intent(Intent.ACTION_VIEW);
-            marketIntent.addCategory(Intent.CATEGORY_BROWSABLE);
-            marketIntent.setData(OpenIntents.FILEMANAGER_ON_MARKET);
-            marketIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(marketIntent);
-        }
-    }
-
-    private void startOIImport() {
-        Intent intent = new Intent(OpenIntents.ACTION_PICK_FILE);
-        intent.putExtra(OpenIntents.EXTRA_TITLE, "Cryptopass: Import bookmarks");
-        intent.putExtra(OpenIntents.EXTRA_BUTTON_TEXT, "Open");
-        tryStartOIFileManager(intent, REQUEST_CODE_OI_IMPORT);
-    }
-
-    private void startOIExport() {
-        Intent intent = new Intent(OpenIntents.ACTION_PICK_FILE);
-        intent.setData(Uri.parse("file:///bookmarks.json"));
-        intent.putExtra(OpenIntents.EXTRA_TITLE, "Cryptopass: Export bookmarks");
-        intent.putExtra(OpenIntents.EXTRA_BUTTON_TEXT, "Save");
-        tryStartOIFileManager(intent, REQUEST_CODE_OI_EXPORT);
-    }
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -171,10 +145,10 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
                 return true;
 
             case R.id.oi_import_bookmarks:
-                startOIImport();
+                mComponent.getOIHelper().startImport();
                 return true;
             case R.id.oi_export_bookmarks:
-                startOIExport();
+                mComponent.getOIHelper().startExport();
                 return true;
 
             case R.id.import_bookmarks:
@@ -191,16 +165,16 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        mComponent.getOIHelper().onActivityResult(requestCode, resultCode, data);
+
         if (RESULT_OK == resultCode) {
             switch (requestCode) {
-                case REQUEST_CODE_OI_IMPORT:
                 case REQUEST_CODE_IMPORT: {
                     Intent intent = new Intent(Data.ACTION_IMPORT, data.getData());
                     intent.setClass(this, ActionService.class);
                     startService(intent);
                 }
                 break;
-                case REQUEST_CODE_OI_EXPORT:
                 case REQUEST_CODE_EXPORT: {
                     Intent intent = new Intent(Data.ACTION_EXPORT, data.getData());
                     intent.setClass(this, ActionService.class);

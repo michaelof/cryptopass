@@ -1,4 +1,4 @@
-package krasilnikov.alexey.cryptopass;
+package krasilnikov.alexey.cryptopass.oi;
 
 import android.net.Uri;
 

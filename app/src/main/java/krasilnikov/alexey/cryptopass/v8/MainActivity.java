@@ -1,9 +1,11 @@
 package krasilnikov.alexey.cryptopass.v8;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.ClipboardManager;
 import android.text.Editable;
@@ -24,6 +26,7 @@ import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.PBKDF2Args;
 import krasilnikov.alexey.cryptopass.R;
 
+@TargetApi(Build.VERSION_CODES.FROYO)
 public final class MainActivity extends Activity implements TextWatcher {
     private Loader mActiveLoader;
 
@@ -150,12 +153,14 @@ public final class MainActivity extends Activity implements TextWatcher {
         }
     }
 
+    @Override
     protected void onDestroy() {
         super.onDestroy();
 
         mActiveLoader.onActivityDestroy();
     }
 
+    @Override
     protected void onPause() {
         mUserInteractive = false;
 
@@ -164,6 +169,7 @@ public final class MainActivity extends Activity implements TextWatcher {
         super.onPause();
     }
 
+    @Override
     protected void onResume() {
         super.onResume();
 
@@ -172,6 +178,7 @@ public final class MainActivity extends Activity implements TextWatcher {
         mUserInteractive = true;
     }
 
+    @Override
     public Object onRetainNonConfigurationInstance() {
         return mActiveLoader.onActivityGetRetainState();
     }

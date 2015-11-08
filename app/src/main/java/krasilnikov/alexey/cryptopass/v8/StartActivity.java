@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
@@ -26,15 +27,19 @@ import krasilnikov.alexey.cryptopass.MainApplication;
 import krasilnikov.alexey.cryptopass.OperationManager;
 import krasilnikov.alexey.cryptopass.R;
 import krasilnikov.alexey.cryptopass.data.BookmarksHelper;
+import krasilnikov.alexey.cryptopass.oi.OpenIntentsActivityHelper;
+import krasilnikov.alexey.cryptopass.scope.ActivityModule;
 import krasilnikov.alexey.cryptopass.scope.ActivityScoped;
 
 public class StartActivity extends ListActivity implements OnItemClickListener, OperationManager.OperationListener {
     private static final int INVALID_ID = -1;
 
     @ActivityScoped
-    @dagger.Component(dependencies = AppComponent.class)
+    @dagger.Component(dependencies = AppComponent.class, modules = ActivityModule.class)
     public interface Component {
         OperationManager getOperationManager();
+
+        OpenIntentsActivityHelper getOIHelper();
     }
 
     private Component mComponent;
@@ -49,6 +54,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
 
         mComponent = DaggerStartActivity_Component.builder().
                 appComponent(MainApplication.getComponent(this)).
+                activityModule(new ActivityModule(this)).
                 build();
 
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
@@ -71,6 +77,28 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
             registerForContextMenu(listView);
 
             setListAdapter(new BookmarksAdapter(this, mBookmarksCursor));
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.main, menu);
+
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.oi_import_bookmarks:
+                mComponent.getOIHelper().startImport();
+                return true;
+            case R.id.oi_export_bookmarks:
+                mComponent.getOIHelper().startExport();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 
@@ -119,7 +147,6 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
         startActivity(new Intent(StartActivity.this, MainActivity.class));
     }
 
-
     void startMainBookmark(final int listPosition) {
         if (listPosition > 0) {
             Uri uri = BookmarksHelper.getBookmarkUri(this, mBookmarksCursor, listPosition - 1);
@@ -156,7 +183,6 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
         }
     }
 
-
     @Override
     public boolean onContextItemSelected(MenuItem item) {
         AdapterContextMenuInfo menuInfo = (AdapterContextMenuInfo) item.getMenuInfo();
@@ -176,6 +202,13 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
         }
 
         return super.onContextItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        mComponent.getOIHelper().onActivityResult(requestCode, resultCode, data);
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private final Handler mHandler = new Handler();
