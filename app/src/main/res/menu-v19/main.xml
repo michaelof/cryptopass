@@ -11,4 +11,8 @@
         android:orderInCategory="100"
         android:showAsAction="never" />
 
+    <item android:id="@+id/send_bookmarks"
+          android:visible="false"
+          android:title="@string/send_bookmarks" />
+
 </menu>

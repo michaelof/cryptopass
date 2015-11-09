@@ -18,6 +18,10 @@ public class Data {
         return mBookmarksUri;
     }
 
+    public static Uri makeExportUri(Context context) {
+        return makeBookmarksUri(context);
+    }
+
     public static Uri makeBookmarkUri(Context context, String username, String url) {
         return makeBookmarksUri(context).buildUpon().
                 appendQueryParameter("username", username).

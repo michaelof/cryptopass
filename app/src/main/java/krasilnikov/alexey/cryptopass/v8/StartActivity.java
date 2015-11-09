@@ -1,7 +1,6 @@
 package krasilnikov.alexey.cryptopass.v8;
 
 import android.app.ListActivity;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.database.ContentObserver;
 import android.database.Cursor;
@@ -32,6 +31,7 @@ import krasilnikov.alexey.cryptopass.R;
 import krasilnikov.alexey.cryptopass.data.BookmarksHelper;
 import krasilnikov.alexey.cryptopass.scope.ActivityModule;
 import krasilnikov.alexey.cryptopass.scope.ActivityScoped;
+import krasilnikov.alexey.cryptopass.sync.SendHelper;
 
 public class StartActivity extends ListActivity implements OnItemClickListener, OperationManager.OperationListener {
     private static final int INVALID_ID = -1;
@@ -42,6 +42,8 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
         OperationManager getOperationManager();
 
         BookmarksSerializer getBookmarksSerializer();
+
+        SendHelper getSendHelper();
     }
 
     private Component mComponent;
@@ -145,25 +147,10 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
     private void sendBookmarks() {
         try {
             String data = mComponent.getBookmarksSerializer().serialize(mBookmarksCursor);
-            Intent intent = new Intent(Intent.ACTION_SEND);
-            intent.setType("text/plain");
-            intent.putExtra(Intent.EXTRA_TEXT, data);
-            intent.putExtra(Intent.EXTRA_SUBJECT, "CryptopassBookmarks.txt");
-            startActivity(intent);
+
+            mComponent.getSendHelper().sendInExtra(data);
         } catch (JSONException e) {
-            throw new RuntimeException("Send bookmarks failed",e);
-        } catch (ActivityNotFoundException e) {
-            // If there are no apps that can handle SEND intent,
-            // suggest user to install Google Drive.
-            try {
-                Intent marketIntent = new Intent(Intent.ACTION_VIEW);
-                marketIntent.addCategory(Intent.CATEGORY_BROWSABLE);
-                marketIntent.setData(Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.docs"));
-                marketIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(marketIntent);
-            } catch (ActivityNotFoundException ignored) {
-                // No Google Play and no web browser? Hm.
-            }
+            throw new RuntimeException("Send bookmarks failed", e);
         }
     }
 

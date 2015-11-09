@@ -20,6 +20,7 @@ import krasilnikov.alexey.cryptopass.OperationManager;
 import krasilnikov.alexey.cryptopass.R;
 import krasilnikov.alexey.cryptopass.scope.ActivityModule;
 import krasilnikov.alexey.cryptopass.scope.ActivityScoped;
+import krasilnikov.alexey.cryptopass.sync.SendHelper;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class StartActivity extends Activity implements BookmarksFragment.IListener, OperationManager.OperationListener {
@@ -35,6 +36,8 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     @dagger.Component(dependencies = AppComponent.class, modules = ActivityModule.class)
     public interface Component {
         OperationManager getOperationManager();
+
+        SendHelper getSendHelper();
     }
 
     private Component mComponent;
@@ -139,6 +142,10 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
             case android.R.id.home:
                 // app icon in action bar clicked; go home
                 goHome();
+                return true;
+
+            case R.id.send_bookmarks:
+                mComponent.getSendHelper().sendByProvider();
                 return true;
 
             case R.id.import_bookmarks:
