@@ -4,11 +4,8 @@ import android.annotation.TargetApi;
 import android.app.ActionBar;
 import android.app.ListFragment;
 import android.app.LoaderManager;
-import android.content.Context;
-import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
-import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
@@ -24,12 +21,15 @@ import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.ListView;
 
+import javax.inject.Inject;
+import javax.inject.Provider;
+
 import krasilnikov.alexey.cryptopass.ActionService;
 import krasilnikov.alexey.cryptopass.BookmarksAdapter;
 import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.R;
 import krasilnikov.alexey.cryptopass.Version;
-import krasilnikov.alexey.cryptopass.data.BookmarksHelper;
+import krasilnikov.alexey.cryptopass.data.BookmarksStorage;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class BookmarksFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
@@ -40,6 +40,9 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
 
         void showBookmark(Uri data);
     }
+
+    @Inject
+    public Provider<BookmarkCursorLoader> mBookmarksLoaderProvider;
 
     private BookmarksAdapter mBookmarksAdapter;
 
@@ -164,7 +167,7 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
         Cursor cursor = mBookmarksAdapter.getCursor();
 
         if (listPosition > 0) {
-            Uri uri = BookmarksHelper.getBookmarkUri(getActivity(), cursor, listPosition - 1);
+            Uri uri = BookmarksStorage.getBookmarkUri(getActivity(), cursor, listPosition - 1);
             Intent intent = new Intent(Data.ACTION_DELETE, uri);
             intent.setClass(getActivity(), ActionService.class);
 
@@ -176,7 +179,7 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
         Cursor cursor = mBookmarksAdapter.getCursor();
 
         if (listPosition > 0) {
-            Uri data = BookmarksHelper.getBookmarkUri(getActivity(), cursor, listPosition - 1);
+            Uri data = BookmarksStorage.getBookmarkUri(getActivity(), cursor, listPosition - 1);
 
             getListener().showBookmark(data);
         } else {
@@ -189,39 +192,9 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
         showBookmark(position);
     }
 
-    private static class BookmarkLoader extends CursorLoader {
-        public BookmarkLoader(Context context) {
-            super(context, Data.makeBookmarksUri(context), Data.BOOKMARKS_PROJECTION, null, null, null);
-        }
-
-        private ContentObserver mDataObserver;
-
-        @Override
-        protected void onStartLoading() {
-            super.onStartLoading();
-
-            if (mDataObserver == null) {
-                mDataObserver = new ForceLoadContentObserver();
-
-                getContext().getContentResolver().registerContentObserver(getUri(), true, mDataObserver);
-            }
-        }
-
-        @Override
-        protected void onStopLoading() {
-            if (mDataObserver != null) {
-                getContext().getContentResolver().unregisterContentObserver(mDataObserver);
-
-                mDataObserver = null;
-            }
-
-            super.onStopLoading();
-        }
-    }
-
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle bundle) {
-        return new BookmarkLoader(getActivity());
+        return mBookmarksLoaderProvider.get();
     }
 
     @Override

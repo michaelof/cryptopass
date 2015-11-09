@@ -1,16 +1,30 @@
 package krasilnikov.alexey.cryptopass.data;
 
+import android.annotation.TargetApi;
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.ContentObserver;
 import android.database.Cursor;
+import android.database.Observable;
 import android.net.Uri;
+import android.os.Build;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import krasilnikov.alexey.cryptopass.Data;
 
-public class BookmarksHelper {
+/**
+ * Class for accessing bookmarks stored on the disk.
+ * Use SQLite internally.
+ */
+@Singleton
+@TargetApi(Build.VERSION_CODES.FROYO)
+public class BookmarksStorage extends Observable<ContentObserver> {
     private final DatabaseHelper mDbHelper;
 
-    public BookmarksHelper(Context context) {
+    @Inject
+    public BookmarksStorage(Context context) {
         mDbHelper = new DatabaseHelper(context);
     }
 
@@ -26,6 +40,8 @@ public class BookmarksHelper {
         values.put(Data.BOOKMARKS_LENGTH, length);
 
         mDbHelper.getWritableDatabase().insert(DatabaseHelper.BOOKMARKS_TABLE, null, values);
+
+        dispatchChange(false, null);
     }
 
     public static Uri getBookmarkUri(Context context, final Cursor c, final int position) {
@@ -46,7 +62,26 @@ public class BookmarksHelper {
         String whereClause = Data.BOOKMARKS_USERNAME + " = ? AND " + Data.BOOKMARKS_URL + " = ?";
         String[] whereArgs = new String[]{username, url};
 
-        return mDbHelper.getWritableDatabase().delete(DatabaseHelper.BOOKMARKS_TABLE, whereClause, whereArgs);
+        int count = mDbHelper.getWritableDatabase().delete(DatabaseHelper.BOOKMARKS_TABLE, whereClause, whereArgs);
+        if (count > 0) {
+            dispatchChange(false, null);
+        }
+
+        return count;
+    }
+
+    private void dispatchChange(boolean selfChange, Uri uri) {
+        synchronized(mObservers) {
+            for (ContentObserver observer : mObservers) {
+                if (!selfChange || observer.deliverSelfNotifications()) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                        observer.dispatchChange(selfChange, uri);
+                    } else {
+                        observer.dispatchChange(selfChange);
+                    }
+                }
+            }
+        }
     }
 
 }

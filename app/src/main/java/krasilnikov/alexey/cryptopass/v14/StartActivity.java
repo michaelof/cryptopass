@@ -2,6 +2,7 @@ package krasilnikov.alexey.cryptopass.v14;
 
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
@@ -38,6 +39,8 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
         OperationManager getOperationManager();
 
         SendHelper getSendHelper();
+
+        void inject(BookmarksFragment fragment);
     }
 
     private Component mComponent;
@@ -59,14 +62,28 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
         }
     }
 
+    private Component getComponent() {
+        if (mComponent == null) {
+            mComponent = DaggerStartActivity_Component.builder().
+                    appComponent(MainApplication.getComponent(this)).
+                    activityModule(new ActivityModule(this)).
+                    build();
+        }
+        return mComponent;
+    }
+
+    @Override
+    public void onAttachFragment(Fragment fragment) {
+        super.onAttachFragment(fragment);
+
+        if (fragment instanceof BookmarksFragment) {
+            getComponent().inject((BookmarksFragment) fragment);
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        mComponent = DaggerStartActivity_Component.builder().
-                appComponent(MainApplication.getComponent(this)).
-                activityModule(new ActivityModule(this)).
-                build();
 
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
@@ -92,19 +109,19 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     protected void onResume() {
         super.onResume();
 
-        mComponent.getOperationManager().subscribe(this);
+        getComponent().getOperationManager().subscribe(this);
         updateProgress();
     }
 
     void updateProgress() {
-        setProgressBarIndeterminateVisibility(mComponent.getOperationManager().isInOperation());
+        setProgressBarIndeterminateVisibility(getComponent().getOperationManager().isInOperation());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        mComponent.getOperationManager().unsubscribe(this);
+        getComponent().getOperationManager().unsubscribe(this);
     }
 
     @Override
@@ -145,7 +162,7 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
                 return true;
 
             case R.id.send_bookmarks:
-                mComponent.getSendHelper().sendByProvider();
+                getComponent().getSendHelper().sendByProvider();
                 return true;
 
             case R.id.import_bookmarks:

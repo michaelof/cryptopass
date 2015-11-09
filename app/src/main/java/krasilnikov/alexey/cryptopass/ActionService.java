@@ -26,6 +26,7 @@ import java.io.Reader;
 import java.io.Writer;
 
 import dagger.Component;
+import krasilnikov.alexey.cryptopass.data.BookmarksStorage;
 import krasilnikov.alexey.cryptopass.scope.ServiceScoped;
 
 public class ActionService extends IntentService {
@@ -36,9 +37,11 @@ public class ActionService extends IntentService {
     @Component(dependencies = AppComponent.class)
     public interface ActionServiceComponent {
         OperationManager getOperationManager();
+
+        BookmarksStorage getStorage();
     }
 
-    private ActionServiceComponent mActionServiceComponent;
+    private ActionServiceComponent mComponent;
 
     public ActionService() {
         super("cryptopass");
@@ -48,27 +51,21 @@ public class ActionService extends IntentService {
     public void onCreate() {
         super.onCreate();
 
-        mActionServiceComponent = DaggerActionService_ActionServiceComponent.builder().
+        mComponent = DaggerActionService_ActionServiceComponent.builder().
                 appComponent(MainApplication.getComponent(this)).
                 build();
     }
 
     private void saveBookmark(Intent intent) {
-        ContentValues values = new ContentValues();
-
         String username = intent.getStringExtra(Data.ARGS_USERNAME);
         String url = intent.getStringExtra(Data.ARGS_URL);
         int length = intent.getIntExtra(Data.ARGS_LENGTH, Data.DEFAULT_LENGTH);
 
-        values.put(Data.ARGS_USERNAME, username);
-        values.put(Data.ARGS_URL, url);
-        values.put(Data.ARGS_LENGTH, length);
-
         Uri bookmarksUri = Data.makeBookmarksUri(this);
-        OperationManager operationManager = mActionServiceComponent.getOperationManager();
+        OperationManager operationManager = mComponent.getOperationManager();
         Object obj = operationManager.operationStarted(bookmarksUri);
         try {
-            getContentResolver().insert(bookmarksUri, values);
+            mComponent.getStorage().saveBookmark(username, url, length);
         } finally {
             operationManager.operationEnded(bookmarksUri, obj);
         }
@@ -76,11 +73,13 @@ public class ActionService extends IntentService {
 
     private void deleteBookmark(Intent intent) {
         Uri uri = intent.getData();
+        String username = Data.getUsername(uri);
+        String url = Data.getUrl(uri);
 
-        OperationManager operationManager = mActionServiceComponent.getOperationManager();
+        OperationManager operationManager = mComponent.getOperationManager();
         Object obj = operationManager.operationStarted(uri);
         try {
-            getContentResolver().delete(uri, null, null);
+            mComponent.getStorage().deleteBookmark(username, url);
         } finally {
             operationManager.operationEnded(uri, obj);
         }
@@ -89,8 +88,7 @@ public class ActionService extends IntentService {
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     private void writeBookmarks(JsonWriter writer) throws IOException {
         writer.beginArray();
-        Cursor c = getContentResolver().query(Data.makeBookmarksUri(this),
-                Data.BOOKMARKS_PROJECTION, null, null, null);
+        Cursor c = mComponent.getStorage().queryBookmarks(Data.BOOKMARKS_PROJECTION);
         while (c.moveToNext()) {
             String url = c.getString(Data.URL_COLUMN);
             String username = c.getString(Data.USERNAME_COLUMN);
@@ -151,7 +149,7 @@ public class ActionService extends IntentService {
     private void exportBookmarks(Intent intent) {
         Uri destination = intent.getData();
 
-        OperationManager operationManager = mActionServiceComponent.getOperationManager();
+        OperationManager operationManager = mComponent.getOperationManager();
         Object obj = operationManager.operationStarted(destination);
         try {
             String displayName = getFileDisplayName(destination);
@@ -208,13 +206,7 @@ public class ActionService extends IntentService {
                 }
             }
 
-            ContentValues values = new ContentValues();
-
-            values.put(Data.ARGS_USERNAME, username);
-            values.put(Data.ARGS_URL, url);
-            values.put(Data.ARGS_LENGTH, length);
-
-            getContentResolver().insert(bookmarksUri, values);
+            mComponent.getStorage().saveBookmark(username, url, length);
 
             reader.endObject();
         }
@@ -225,7 +217,7 @@ public class ActionService extends IntentService {
     private void importBookmarks(Intent intent) {
         Uri source = intent.getData();
 
-        OperationManager operationManager = mActionServiceComponent.getOperationManager();
+        OperationManager operationManager = mComponent.getOperationManager();
         Object obj = operationManager.operationStarted(source);
         try {
             String displayName = getFileDisplayName(source);

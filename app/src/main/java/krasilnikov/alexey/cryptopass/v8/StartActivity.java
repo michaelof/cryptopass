@@ -28,7 +28,7 @@ import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.MainApplication;
 import krasilnikov.alexey.cryptopass.OperationManager;
 import krasilnikov.alexey.cryptopass.R;
-import krasilnikov.alexey.cryptopass.data.BookmarksHelper;
+import krasilnikov.alexey.cryptopass.data.BookmarksStorage;
 import krasilnikov.alexey.cryptopass.scope.ActivityModule;
 import krasilnikov.alexey.cryptopass.scope.ActivityScoped;
 import krasilnikov.alexey.cryptopass.sync.SendHelper;
@@ -40,6 +40,8 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
     @dagger.Component(dependencies = AppComponent.class, modules = ActivityModule.class)
     public interface Component {
         OperationManager getOperationManager();
+
+        BookmarksStorage getStorage();
 
         BookmarksSerializer getBookmarksSerializer();
 
@@ -65,7 +67,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
 
         setProgressBarIndeterminateVisibility(false);
 
-        mBookmarksCursor = getContentResolver().query(Data.makeBookmarksUri(this), Data.BOOKMARKS_PROJECTION, null, null, null);
+        mBookmarksCursor = mComponent.getStorage().queryBookmarks(Data.BOOKMARKS_PROJECTION);
         startManagingCursor(mBookmarksCursor);
 
         if (mBookmarksCursor.getCount() == 0) {
@@ -117,14 +119,14 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
         super.onResume();
 
         mComponent.getOperationManager().subscribe(this);
-        getContentResolver().registerContentObserver(Data.makeBookmarksUri(this), false, mBookmarksObserver);
+        mComponent.getStorage().registerObserver(mBookmarksObserver);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        getContentResolver().unregisterContentObserver(mBookmarksObserver);
+        mComponent.getStorage().unregisterObserver(mBookmarksObserver);
         mComponent.getOperationManager().unsubscribe(this);
     }
 
@@ -160,7 +162,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
 
     private void startMainBookmark(final int listPosition) {
         if (listPosition > 0) {
-            Uri uri = BookmarksHelper.getBookmarkUri(this, mBookmarksCursor, listPosition - 1);
+            Uri uri = BookmarksStorage.getBookmarkUri(this, mBookmarksCursor, listPosition - 1);
             Intent intent = new Intent(Data.ACTION_SHOW, uri);
 
             startActivity(intent);
@@ -169,7 +171,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
 
     private void deleteBookmark(final int listPosition) {
         if (listPosition > 0) {
-            Uri uri = BookmarksHelper.getBookmarkUri(this, mBookmarksCursor, listPosition - 1);
+            Uri uri = BookmarksStorage.getBookmarkUri(this, mBookmarksCursor, listPosition - 1);
             Intent intent = new Intent(Data.ACTION_DELETE, uri);
             intent.setClass(this, ActionService.class);
 
