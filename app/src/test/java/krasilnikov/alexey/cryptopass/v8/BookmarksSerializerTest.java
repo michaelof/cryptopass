@@ -3,13 +3,19 @@ package krasilnikov.alexey.cryptopass.v8;
 import android.database.MatrixCursor;
 import android.os.Build;
 
+import com.ximpleware.transcode.ASCII_Coder;
+
 import junit.framework.Assert;
 
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
+
+import java.io.StringReader;
 
 import krasilnikov.alexey.cryptopass.BuildConfig;
 import krasilnikov.alexey.cryptopass.Data;
@@ -17,33 +23,6 @@ import krasilnikov.alexey.cryptopass.Data;
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = Build.VERSION_CODES.JELLY_BEAN)
 public class BookmarksSerializerTest {
-    private final String EXPECTED_ONE_ROW = "[\n" +
-            "  {\n" +
-            "    \"username\": \"user\",\n" +
-            "    \"length\": 10,\n" +
-            "    \"url\": \"url\"\n" +
-            "  }\n" +
-            "]";
-
-    private final String EXPECTED_TWO_ROWS = "[\n" +
-            "  {\n" +
-            "    \"username\": \"user\",\n" +
-            "    \"length\": 10,\n" +
-            "    \"url\": \"url\"\n" +
-            "  },\n" +
-            "  {\n" +
-            "    \"username\": \"user2\",\n" +
-            "    \"length\": 11,\n" +
-            "    \"url\": \"url2\"\n" +
-            "  }\n" +
-            "]";
-
-    private final String EXPECTED_ONLY_URL = "[\n" +
-            "  {\n" +
-            "    \"length\": 16,\n" +
-            "    \"url\": \"url\"\n" +
-            "  }\n" +
-            "]";
 
     private MatrixCursor makeMatrix() {
         return new MatrixCursor(Data.BOOKMARKS_PROJECTION);
@@ -75,24 +54,56 @@ public class BookmarksSerializerTest {
     }
 
     @Test
-    public void oneRow() throws JSONException {
-        Assert.assertEquals(EXPECTED_ONE_ROW, mSerializer.serialize(makeOneRowData()));
+    public void oneObject() throws JSONException {
+        String data = mSerializer.serialize(makeOneRowData());
+        JSONArray array = new JSONArray(data);
+
+        Assert.assertEquals(1, array.length());
+        Assert.assertEquals("url", array.getJSONObject(0).get("url"));
+        Assert.assertEquals("user", array.getJSONObject(0).get("username"));
+        Assert.assertEquals(10, array.getJSONObject(0).get("length"));
     }
 
     @Test
     public void twoRows() throws JSONException {
-        Assert.assertEquals(EXPECTED_TWO_ROWS, mSerializer.serialize(makeTwoRowsData()));
+        String data = mSerializer.serialize(makeTwoRowsData());
+        JSONArray array = new JSONArray(data);
+
+        Assert.assertEquals(2, array.length());
+        Assert.assertEquals("url", array.getJSONObject(0).get("url"));
+        Assert.assertEquals("user", array.getJSONObject(0).get("username"));
+        Assert.assertEquals(10, array.getJSONObject(0).get("length"));
+        Assert.assertEquals("url2", array.getJSONObject(1).get("url"));
+        Assert.assertEquals("user2", array.getJSONObject(1).get("username"));
+        Assert.assertEquals(11, array.getJSONObject(1).get("length"));
     }
 
     @Test
     public void scrolledCursor() throws JSONException {
         MatrixCursor cursor = makeTwoRowsData();
         cursor.moveToLast();
-        Assert.assertEquals(EXPECTED_TWO_ROWS, mSerializer.serialize(cursor));
+
+        String data = mSerializer.serialize(cursor);
+        JSONArray array = new JSONArray(data);
+
+        Assert.assertEquals(2, array.length());
     }
 
     @Test
     public void onlyUrl() throws JSONException {
-        Assert.assertEquals(EXPECTED_ONLY_URL, mSerializer.serialize(makeOneRowOnlyUrlData()));
+        String data = mSerializer.serialize(makeOneRowOnlyUrlData());
+        JSONArray array = new JSONArray(data);
+
+        Assert.assertEquals(1, array.length());
+        Assert.assertEquals("url", array.getJSONObject(0).get("url"));
+        Assert.assertTrue(array.getJSONObject(0).isNull("username"));
+        Assert.assertEquals(16, array.getJSONObject(0).get("length"));
+    }
+
+    @Test
+    public void fileFormatter() throws JSONException {
+        String data = mSerializer.serialize(makeOneRowData());
+        String lines[] = data.split("\\r?\\n");
+        Assert.assertEquals(data, 7, lines.length);
     }
 }
