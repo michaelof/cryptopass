@@ -1,6 +1,7 @@
 package krasilnikov.alexey.cryptopass.v8;
 
 import android.app.ListActivity;
+import android.content.ActivityNotFoundException;
 import android.content.Intent;
 import android.database.ContentObserver;
 import android.database.Cursor;
@@ -19,6 +20,8 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import org.json.JSONException;
+
 import krasilnikov.alexey.cryptopass.ActionService;
 import krasilnikov.alexey.cryptopass.AppComponent;
 import krasilnikov.alexey.cryptopass.BookmarksAdapter;
@@ -27,6 +30,7 @@ import krasilnikov.alexey.cryptopass.MainApplication;
 import krasilnikov.alexey.cryptopass.OperationManager;
 import krasilnikov.alexey.cryptopass.R;
 import krasilnikov.alexey.cryptopass.data.BookmarksHelper;
+import krasilnikov.alexey.cryptopass.oi.OpenIntents;
 import krasilnikov.alexey.cryptopass.oi.OpenIntentsActivityHelper;
 import krasilnikov.alexey.cryptopass.scope.ActivityModule;
 import krasilnikov.alexey.cryptopass.scope.ActivityScoped;
@@ -40,6 +44,8 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
         OperationManager getOperationManager();
 
         OpenIntentsActivityHelper getOIHelper();
+
+        BookmarksSerializer getBookmarksSerializer();
     }
 
     private Component mComponent;
@@ -90,6 +96,10 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
+            case R.id.send_bookmarks:
+                sendBookmarks();
+                return true;
+
             case R.id.oi_import_bookmarks:
                 mComponent.getOIHelper().startImport();
                 return true;
@@ -143,11 +153,36 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
         }
     }
 
-    void startMainEmpty() {
+    private void sendBookmarks() {
+        try {
+            String data = mComponent.getBookmarksSerializer().serialize(mBookmarksCursor);
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(Intent.EXTRA_TEXT, data);
+            intent.putExtra(Intent.EXTRA_SUBJECT, "CryptopassBookmarks.txt");
+            startActivity(intent);
+        } catch (JSONException e) {
+            throw new RuntimeException("Send bookmarks failed",e);
+        } catch (ActivityNotFoundException e) {
+            // If there are no apps that can handle SEND intent,
+            // suggest user to install Google Drive.
+            try {
+                Intent marketIntent = new Intent(Intent.ACTION_VIEW);
+                marketIntent.addCategory(Intent.CATEGORY_BROWSABLE);
+                marketIntent.setData(Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.docs"));
+                marketIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(marketIntent);
+            } catch (ActivityNotFoundException ignored) {
+                // No Google Play and no web browser? Hm.
+            }
+        }
+    }
+
+    private void startMainEmpty() {
         startActivity(new Intent(StartActivity.this, MainActivity.class));
     }
 
-    void startMainBookmark(final int listPosition) {
+    private void startMainBookmark(final int listPosition) {
         if (listPosition > 0) {
             Uri uri = BookmarksHelper.getBookmarkUri(this, mBookmarksCursor, listPosition - 1);
             Intent intent = new Intent(Data.ACTION_SHOW, uri);

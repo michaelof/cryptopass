@@ -4,3 +4,6 @@ Android phone
 Android tablet
 Ограничение на используемые символы в пароле
 Облачная синхронизация закладок
+
+1. Should I send users to F-Droid instead of Google Play?
+

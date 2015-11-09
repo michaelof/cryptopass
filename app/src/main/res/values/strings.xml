@@ -22,4 +22,5 @@
 
     <string name="oi_import_bookmarks">Import bookmarks (OI FileManager)</string>
     <string name="oi_export_bookmarks">Export bookmarks (OI FileManager)</string>
+    <string name="send_bookmarks">Send bookmarks (E-Mail, etc)</string>
 </resources>
