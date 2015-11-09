@@ -3,11 +3,11 @@ package krasilnikov.alexey.cryptopass.sync;
 import android.annotation.TargetApi;
 import android.database.Cursor;
 import android.os.Build;
-import android.text.TextUtils;
-import android.util.JsonWriter;
 
-import java.io.FileOutputStream;
+import org.json.JSONException;
+
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 
@@ -23,40 +23,26 @@ import krasilnikov.alexey.cryptopass.data.BookmarksStorage;
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class BookmarksWriter {
     private final BookmarksStorage mBookmarksStorage;
+    private final BookmarksSerializer mBookmarksSerializer;
+
     @Inject
-    public BookmarksWriter(BookmarksStorage storage) {
+    public BookmarksWriter(BookmarksStorage storage, BookmarksSerializer serializer) {
         mBookmarksStorage = storage;
+        mBookmarksSerializer = serializer;
     }
 
     /**
      * Write bookmarks to given output steam. Stream will be closed after that.
      */
-    public void write(FileOutputStream outputStream) throws IOException {
+    public void write(OutputStream outputStream) throws IOException, JSONException {
         Writer fileWriter = new OutputStreamWriter(outputStream);
-        JsonWriter jsonWriter = new JsonWriter(fileWriter);
         try {
-            writeBookmarks(jsonWriter);
+            Cursor c = mBookmarksStorage.queryBookmarks(Data.BOOKMARKS_PROJECTION);
+
+            fileWriter.write(mBookmarksSerializer.serialize(c));
         } finally {
-            Utils.close(jsonWriter);
+            Utils.close(fileWriter);
         }
     }
 
-    private void writeBookmarks(JsonWriter writer) throws IOException {
-        writer.beginArray();
-        Cursor c = mBookmarksStorage.queryBookmarks(Data.BOOKMARKS_PROJECTION);
-        while (c.moveToNext()) {
-            String url = c.getString(Data.URL_COLUMN);
-            String username = c.getString(Data.USERNAME_COLUMN);
-            int length = c.getInt(Data.LENGTH_COLUMN);
-
-            writer.beginObject();
-            if (!TextUtils.isEmpty(url))
-                writer.name("url").value(url);
-            if (!TextUtils.isEmpty(username))
-                writer.name("username").value(username);
-            writer.name("length").value(length);
-            writer.endObject();
-        }
-        writer.endArray();
-    }
 }

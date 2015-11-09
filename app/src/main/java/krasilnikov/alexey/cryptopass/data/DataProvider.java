@@ -5,30 +5,26 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Bundle;
-import android.os.CancellationSignal;
 import android.os.ParcelFileDescriptor;
 import android.os.SystemClock;
 import android.provider.MediaStore;
+
+import org.json.JSONException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import dagger.Component;
 import krasilnikov.alexey.cryptopass.AppComponent;
 import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.MainApplication;
-import krasilnikov.alexey.cryptopass.OperationManager;
 import krasilnikov.alexey.cryptopass.R;
 import krasilnikov.alexey.cryptopass.scope.ContentProviderScoped;
-import krasilnikov.alexey.cryptopass.scope.ServiceScoped;
 import krasilnikov.alexey.cryptopass.sync.BookmarksWriter;
 
 /**
@@ -106,7 +102,7 @@ public class DataProvider extends ContentProvider {
             mComponent.getBookmarksWriter().write(new FileOutputStream(tmpFile));
 
             return ParcelFileDescriptor.open(tmpFile, ParcelFileDescriptor.MODE_READ_ONLY);
-        } catch (IOException e) {
+        } catch (IOException | JSONException e) {
             throw new RuntimeException(e);
         }
     }

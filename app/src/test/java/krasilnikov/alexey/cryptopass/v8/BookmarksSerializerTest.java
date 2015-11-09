@@ -3,22 +3,18 @@ package krasilnikov.alexey.cryptopass.v8;
 import android.database.MatrixCursor;
 import android.os.Build;
 
-import com.ximpleware.transcode.ASCII_Coder;
-
 import junit.framework.Assert;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricGradleTestRunner;
 import org.robolectric.annotation.Config;
 
-import java.io.StringReader;
-
 import krasilnikov.alexey.cryptopass.BuildConfig;
 import krasilnikov.alexey.cryptopass.Data;
+import krasilnikov.alexey.cryptopass.sync.BookmarksSerializer;
 
 @RunWith(RobolectricGradleTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = Build.VERSION_CODES.JELLY_BEAN)

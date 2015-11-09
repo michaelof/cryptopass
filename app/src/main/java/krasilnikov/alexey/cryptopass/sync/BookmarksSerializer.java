@@ -1,4 +1,4 @@
-package krasilnikov.alexey.cryptopass.v8;
+package krasilnikov.alexey.cryptopass.sync;
 
 import android.annotation.TargetApi;
 import android.database.Cursor;
@@ -15,7 +15,6 @@ import krasilnikov.alexey.cryptopass.Data;
 
 /**
  * Helper class for bookmarks serialization.
- * Designed for android 2.2, newer OS version uses another.
  */
 @TargetApi(Build.VERSION_CODES.FROYO)
 public class BookmarksSerializer {

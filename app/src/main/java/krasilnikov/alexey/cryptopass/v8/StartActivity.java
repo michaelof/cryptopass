@@ -31,6 +31,7 @@ import krasilnikov.alexey.cryptopass.R;
 import krasilnikov.alexey.cryptopass.data.BookmarksStorage;
 import krasilnikov.alexey.cryptopass.scope.ActivityModule;
 import krasilnikov.alexey.cryptopass.scope.ActivityScoped;
+import krasilnikov.alexey.cryptopass.sync.BookmarksSerializer;
 import krasilnikov.alexey.cryptopass.sync.SendHelper;
 
 public class StartActivity extends ListActivity implements OnItemClickListener, OperationManager.OperationListener {
