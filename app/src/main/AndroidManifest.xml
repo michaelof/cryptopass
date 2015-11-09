@@ -46,6 +46,6 @@
 
         <provider android:authorities="${applicationId}"
                   android:name="krasilnikov.alexey.cryptopass.data.DataProvider"
-                  android:exported="false"/>
+                  android:grantUriPermissions="true"/>
     </application>
 </manifest>

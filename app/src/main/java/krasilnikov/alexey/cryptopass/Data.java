@@ -19,7 +19,7 @@ public class Data {
     }
 
     public static Uri makeExportUri(Context context) {
-        return makeBookmarksUri(context);
+        return makeBookmarksUri(context).buildUpon().appendPath("export").build();
     }
 
     public static Uri makeBookmarkUri(Context context, String username, String url) {

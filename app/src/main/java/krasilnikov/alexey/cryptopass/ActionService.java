@@ -28,6 +28,7 @@ import java.io.Writer;
 import dagger.Component;
 import krasilnikov.alexey.cryptopass.data.BookmarksStorage;
 import krasilnikov.alexey.cryptopass.scope.ServiceScoped;
+import krasilnikov.alexey.cryptopass.sync.BookmarksWriter;
 
 public class ActionService extends IntentService {
     private static final int NOTIFICATION_EXPORT = 1;
@@ -37,6 +38,8 @@ public class ActionService extends IntentService {
     @Component(dependencies = AppComponent.class)
     public interface ActionServiceComponent {
         OperationManager getOperationManager();
+
+        BookmarksWriter getBookmarksWriter();
 
         BookmarksStorage getStorage();
     }
@@ -83,26 +86,6 @@ public class ActionService extends IntentService {
         } finally {
             operationManager.operationEnded(uri, obj);
         }
-    }
-
-    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-    private void writeBookmarks(JsonWriter writer) throws IOException {
-        writer.beginArray();
-        Cursor c = mComponent.getStorage().queryBookmarks(Data.BOOKMARKS_PROJECTION);
-        while (c.moveToNext()) {
-            String url = c.getString(Data.URL_COLUMN);
-            String username = c.getString(Data.USERNAME_COLUMN);
-            int length = c.getInt(Data.LENGTH_COLUMN);
-
-            writer.beginObject();
-            if (!TextUtils.isEmpty(url))
-                writer.name("url").value(url);
-            if (!TextUtils.isEmpty(username))
-                writer.name("username").value(username);
-            writer.name("length").value(length);
-            writer.endObject();
-        }
-        writer.endArray();
     }
 
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
@@ -160,13 +143,7 @@ public class ActionService extends IntentService {
             ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(destination, "w");
             FileOutputStream outputStream =
                     new ParcelFileDescriptor.AutoCloseOutputStream(pfd);
-            Writer fileWriter = new OutputStreamWriter(outputStream);
-            JsonWriter jsonWriter = new JsonWriter(fileWriter);
-            try {
-                writeBookmarks(jsonWriter);
-            } finally {
-                Utils.close(jsonWriter);
-            }
+            mComponent.getBookmarksWriter().write(outputStream);
 
             stopForeground(true);
             NotificationManager notifManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);

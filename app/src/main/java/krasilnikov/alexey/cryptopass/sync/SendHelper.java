@@ -8,6 +8,7 @@ import android.net.Uri;
 import javax.inject.Inject;
 
 import krasilnikov.alexey.cryptopass.Data;
+import krasilnikov.alexey.cryptopass.R;
 
 /**
  * This class contains methods for maintain ACTION_SEND intents.
@@ -34,7 +35,7 @@ public class SendHelper {
     private Intent makeBaseIntent() {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        intent.putExtra(Intent.EXTRA_SUBJECT, "CryptopassBookmarks.txt");
+        intent.putExtra(Intent.EXTRA_SUBJECT,  mActivity.getString(R.string.export_file_name));
         return intent;
     }
 
