@@ -2,24 +2,26 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="krasilnikov.alexey.cryptopass">
 
-    <application android:label="@string/app_name"
+    <application android:name=".MainApplication"
                  android:icon="@drawable/icon"
-                 android:name=".MainApplication">
-        <service android:exported="false" android:name="krasilnikov.alexey.cryptopass.ActionService">
+                 android:label="@string/app_name">
+        <service android:name="krasilnikov.alexey.cryptopass.ActionService"
+                 android:exported="false">
             <intent-filter>
-                <action android:name="krasilnikov.alexey.cryptopass.SAVE"/>
-                <action android:name="krasilnikov.alexey.cryptopass.DELETE"/>
-                <action android:name="krasilnikov.alexey.cryptopass.EXPORT"/>
-                <data android:scheme="content"/>
+                <action android:name="krasilnikov.alexey.cryptopass.SAVE" />
+                <action android:name="krasilnikov.alexey.cryptopass.DELETE" />
+                <action android:name="krasilnikov.alexey.cryptopass.EXPORT" />
+
+                <data android:scheme="content" />
             </intent-filter>
         </service>
 
         <activity android:name="krasilnikov.alexey.cryptopass.v8.StartActivity"
-                  android:label="@string/app_name"
-                  android:enabled="@bool/atMostHoneycomb">
+                  android:enabled="@bool/atMostHoneycomb"
+                  android:label="@string/app_name">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
@@ -29,23 +31,23 @@
                   android:windowSoftInputMode="stateAlwaysVisible|adjustResize">
 
             <intent-filter>
-                <action android:name="krasilnikov.alexey.cryptopass.SHOW"/>
-                <category android:name="android.intent.category.DEFAULT"/>
-                <data android:scheme="content"/>
+                <action android:name="krasilnikov.alexey.cryptopass.SHOW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="content" />
             </intent-filter>
         </activity>
 
         <activity android:name="krasilnikov.alexey.cryptopass.v14.StartActivity"
-                  android:label="@string/app_name"
-                  android:enabled="@bool/atLeastIceScreamSandwich">
+                  android:enabled="@bool/atLeastIceScreamSandwich"
+                  android:label="@string/app_name">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <provider android:authorities="${applicationId}"
-                  android:name="krasilnikov.alexey.cryptopass.data.DataProvider"
-                  android:grantUriPermissions="true"/>
+        <provider android:name="krasilnikov.alexey.cryptopass.data.DataProvider"
+                  android:authorities="${applicationId}"
+                  android:grantUriPermissions="true" />
     </application>
 </manifest>
