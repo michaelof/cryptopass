@@ -18,7 +18,6 @@ import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.MainApplication;
 import krasilnikov.alexey.cryptopass.OperationManager;
 import krasilnikov.alexey.cryptopass.R;
-import krasilnikov.alexey.cryptopass.oi.OpenIntentsActivityHelper;
 import krasilnikov.alexey.cryptopass.scope.ActivityModule;
 import krasilnikov.alexey.cryptopass.scope.ActivityScoped;
 
@@ -36,8 +35,6 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     @dagger.Component(dependencies = AppComponent.class, modules = ActivityModule.class)
     public interface Component {
         OperationManager getOperationManager();
-
-        OpenIntentsActivityHelper getOIHelper();
     }
 
     private Component mComponent;
@@ -144,13 +141,6 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
                 goHome();
                 return true;
 
-            case R.id.oi_import_bookmarks:
-                mComponent.getOIHelper().startImport();
-                return true;
-            case R.id.oi_export_bookmarks:
-                mComponent.getOIHelper().startExport();
-                return true;
-
             case R.id.import_bookmarks:
                 startImport();
                 return true;
@@ -165,8 +155,6 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        mComponent.getOIHelper().onActivityResult(requestCode, resultCode, data);
-
         if (RESULT_OK == resultCode) {
             switch (requestCode) {
                 case REQUEST_CODE_IMPORT: {

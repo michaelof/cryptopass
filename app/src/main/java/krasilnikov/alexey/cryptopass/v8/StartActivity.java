@@ -30,8 +30,6 @@ import krasilnikov.alexey.cryptopass.MainApplication;
 import krasilnikov.alexey.cryptopass.OperationManager;
 import krasilnikov.alexey.cryptopass.R;
 import krasilnikov.alexey.cryptopass.data.BookmarksHelper;
-import krasilnikov.alexey.cryptopass.oi.OpenIntents;
-import krasilnikov.alexey.cryptopass.oi.OpenIntentsActivityHelper;
 import krasilnikov.alexey.cryptopass.scope.ActivityModule;
 import krasilnikov.alexey.cryptopass.scope.ActivityScoped;
 
@@ -42,8 +40,6 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
     @dagger.Component(dependencies = AppComponent.class, modules = ActivityModule.class)
     public interface Component {
         OperationManager getOperationManager();
-
-        OpenIntentsActivityHelper getOIHelper();
 
         BookmarksSerializer getBookmarksSerializer();
     }
@@ -98,13 +94,6 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
         switch (item.getItemId()) {
             case R.id.send_bookmarks:
                 sendBookmarks();
-                return true;
-
-            case R.id.oi_import_bookmarks:
-                mComponent.getOIHelper().startImport();
-                return true;
-            case R.id.oi_export_bookmarks:
-                mComponent.getOIHelper().startExport();
                 return true;
 
             default:
@@ -237,13 +226,6 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
         }
 
         return super.onContextItemSelected(item);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        mComponent.getOIHelper().onActivityResult(requestCode, resultCode, data);
-
-        super.onActivityResult(requestCode, resultCode, data);
     }
 
     private final Handler mHandler = new Handler();

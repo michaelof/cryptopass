@@ -2,10 +2,4 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@+id/send_bookmarks"
           android:title="@string/send_bookmarks" />
-
-    <item android:id="@+id/oi_import_bookmarks"
-          android:title="@string/oi_import_bookmarks"/>
-
-    <item android:id="@+id/oi_export_bookmarks"
-          android:title="@string/oi_export_bookmarks"/>
 </menu>
