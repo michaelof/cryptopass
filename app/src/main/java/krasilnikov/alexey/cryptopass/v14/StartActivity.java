@@ -141,7 +141,8 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     private void startExport() {
         Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
+        intent.putExtra(Intent.EXTRA_TITLE, getString(R.string.export_file_name));
+        intent.setType("text/plain");
         startActivityForResult(intent, REQUEST_CODE_EXPORT);
     }
 
@@ -149,7 +150,7 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     private void startImport() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
         intent.addCategory(Intent.CATEGORY_OPENABLE);
-        intent.setType("*/*");
+        intent.setType("text/plain");
         startActivityForResult(intent, REQUEST_CODE_IMPORT);
     }
 
