@@ -114,9 +114,10 @@ public class DataProvider extends ContentProvider {
             throw new IllegalStateException();
         }
 
-        if (!Data.makeExportUri(context).equals(uri)) {
+        if (Data.makeExportUri(context).equals(uri)) {
             return "text/plain";
         }
+
         return null;
     }
 

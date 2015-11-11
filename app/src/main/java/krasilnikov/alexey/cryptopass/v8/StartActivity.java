@@ -158,13 +158,14 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
     }
 
     private void startMainEmpty() {
-        startActivity(new Intent(StartActivity.this, MainActivity.class));
+        startActivity(new Intent(this, MainActivity.class));
     }
 
     private void startMainBookmark(final int listPosition) {
         if (listPosition > 0) {
             Uri uri = BookmarksStorage.getBookmarkUri(this, mBookmarksCursor, listPosition - 1);
             Intent intent = new Intent(Data.ACTION_SHOW, uri);
+            intent.setClass(this, MainActivity.class);
 
             startActivity(intent);
         }
