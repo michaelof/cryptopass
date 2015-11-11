@@ -56,9 +56,9 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
         boolean firstStart = intent.getBooleanExtra(FIRST_START, false);
 
         if (firstStart) {
-            getFragmentManager().beginTransaction().replace(R.id.rootView, new MainFragment(), MAIN_TAG).commit();
+            getFragmentManager().beginTransaction().replace(android.R.id.content, new MainFragment(), MAIN_TAG).commit();
         } else {
-            getFragmentManager().beginTransaction().replace(R.id.rootView, new BookmarksFragment(), BOOKMARKS_TAG).commit();
+            getFragmentManager().beginTransaction().replace(android.R.id.content, new BookmarksFragment(), BOOKMARKS_TAG).commit();
         }
     }
 
@@ -86,8 +86,6 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
         super.onCreate(savedInstanceState);
 
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-
-        setContentView(R.layout.start);
 
         setProgressBarIndeterminateVisibility(false);
 
@@ -213,7 +211,7 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     public void showBookmark(Uri data) {
         final MainFragment fragment = MainFragment.instantiate(data);
 
-        getFragmentManager().beginTransaction().replace(R.id.rootView, fragment, MAIN_TAG).addToBackStack(null).commit();
+        getFragmentManager().beginTransaction().replace(android.R.id.content, fragment, MAIN_TAG).addToBackStack(null).commit();
     }
 
     @Override
