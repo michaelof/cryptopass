@@ -8,6 +8,7 @@
                  android:allowBackup="true"
                  android:fullBackupContent="true"
                  android:label="@string/app_name"
+                 android:supportsRtl="true"
                  tools:ignore="GoogleAppIndexingWarning">
         <service android:name="krasilnikov.alexey.cryptopass.ActionService"
                  android:exported="false">

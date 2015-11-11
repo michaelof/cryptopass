@@ -13,18 +13,25 @@
             android:layout_height="wrap_content"/>
 
     <EditText android:id="@+id/secretEdit"
+              android:textAlignment="viewStart"
+              android:layout_gravity="start"
               android:hint="@string/secret_hint"
               android:inputType="textPassword"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"/>
 
     <EditText android:id="@+id/usernameEdit"
+              android:textAlignment="viewStart"
+              android:layout_gravity="start"
               android:hint="@string/username_hint"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"/>
 
     <EditText android:id="@+id/urlEdit"
+              android:textAlignment="viewStart"
+              android:layout_gravity="start"
               android:hint="@string/url_hint"
+              android:inputType="textUri"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"/>
 

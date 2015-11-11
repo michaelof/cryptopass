@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+          android:textDirection="locale"
+          android:layout_width="fill_parent"
+          android:layout_height="@dimen/listItemHeight"
+          android:drawableStart="@drawable/ic_action_edit"
+          android:gravity="center_vertical"
+          android:paddingEnd="@dimen/listPadding"
+          android:text="@string/empty_row_title"
+          android:textAppearance="@android:style/TextAppearance.Medium">
+
+</TextView>
