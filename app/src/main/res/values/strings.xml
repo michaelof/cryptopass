@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">CryptoPass</string>
 
-    <string name="working">Working...</string>
+    <string name="working">Working…</string>
     <string name="working_secret_empty">Secret is empty</string>
     <string name="result">%s\ntap to copy and save</string>
     
@@ -20,8 +20,7 @@
     <string name="title_export_progress">Exporting…</string>
     <string name="title_export_complete">Export complete.</string>
 
-    <string name="oi_import_bookmarks">Import bookmarks (OI FileManager)</string>
-    <string name="oi_export_bookmarks">Export bookmarks (OI FileManager)</string>
     <string name="send_bookmarks">Send bookmarks (E-Mail, etc)</string>
     <string name="export_file_name">CryptopassBookmarks.txt</string>
+    <string name="default_length">25</string>
 </resources>

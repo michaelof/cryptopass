@@ -21,6 +21,8 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.util.Locale;
+
 import krasilnikov.alexey.cryptopass.Bookmark;
 import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.PBKDF2Args;
@@ -126,7 +128,7 @@ public final class MainActivity extends Activity implements TextWatcher {
 
     protected void updateLength() {
         int length = getPasswordLength();
-        String str = String.format("%02d", length);
+        String str = String.format(Locale.ENGLISH, "%02d", length);
 
         mLengthText.setText(str);
 

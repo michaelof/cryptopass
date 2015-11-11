@@ -25,6 +25,8 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import java.util.Locale;
+
 import krasilnikov.alexey.cryptopass.ActionService;
 import krasilnikov.alexey.cryptopass.Bookmark;
 import krasilnikov.alexey.cryptopass.Data;
@@ -154,7 +156,7 @@ public class MainFragment extends Fragment implements TextWatcher, ResultHandler
 
     protected void updateLengthText() {
         int length = getPasswordLength();
-        String str = String.format("%02d", length);
+        String str = String.format(Locale.ENGLISH, "%02d", length);
 
         mLengthText.setText(str);
         if (activeResult != null) {

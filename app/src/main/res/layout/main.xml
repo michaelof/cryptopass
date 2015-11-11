@@ -14,7 +14,7 @@
 
     <EditText android:id="@+id/secretEdit"
               android:hint="@string/secret_hint"
-              android:password="true"
+              android:inputType="textPassword"
               android:layout_width="fill_parent"
               android:layout_height="wrap_content"/>
 
@@ -40,7 +40,7 @@
                  android:layout_height="wrap_content"/>
 
         <TextView android:id="@+id/lengthText"
-                  android:text="25"
+                  android:text="@string/default_length"
                   android:textSize="18sp"
                   android:layout_gravity="center"
                   android:layout_marginLeft="8dp"
