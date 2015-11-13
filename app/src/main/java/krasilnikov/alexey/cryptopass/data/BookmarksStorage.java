@@ -8,6 +8,7 @@ import android.database.Cursor;
 import android.database.Observable;
 import android.net.Uri;
 import android.os.Build;
+import android.text.TextUtils;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -38,6 +39,10 @@ public class BookmarksStorage extends Observable<ContentObserver> {
         values.put(Data.BOOKMARKS_USERNAME, username != null ? username : "");
         values.put(Data.BOOKMARKS_URL, url != null ? url : "");
         values.put(Data.BOOKMARKS_LENGTH, length);
+
+        if (TextUtils.isEmpty(username) && TextUtils.isEmpty(url)) {
+            return;
+        }
 
         mDbHelper.getWritableDatabase().insert(DatabaseHelper.BOOKMARKS_TABLE, null, values);
 
