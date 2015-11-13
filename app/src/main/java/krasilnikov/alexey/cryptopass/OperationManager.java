@@ -42,9 +42,9 @@ public class OperationManager {
         }
     }
 
-    private HashMap<Uri, Object> mOperationMap = new HashMap<Uri, Object>();
+    private final HashMap<Uri, Object> mOperationMap = new HashMap<>();
 
-    private ArrayList<OperationListener> mListenersArray = new ArrayList<OperationListener>();
+    private final ArrayList<OperationListener> mListenersArray = new ArrayList<>();
 
     public synchronized boolean isInOperation() {
         return !mOperationMap.isEmpty();

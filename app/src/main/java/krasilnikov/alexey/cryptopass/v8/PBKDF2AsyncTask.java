@@ -42,7 +42,7 @@ public class PBKDF2AsyncTask extends AsyncTask<Void, Void, PBKDF2AsyncTaskResult
         }
     }
 
-    private ResultListener mResultListener;
+    private final ResultListener mResultListener;
     private PBKDF2Args mChangedGenerateArgs;
 
     public PBKDF2AsyncTask(ResultListener listener, PBKDF2Args args) {

@@ -4,7 +4,6 @@ import android.annotation.TargetApi;
 import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
-import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -13,7 +12,6 @@ import android.os.ParcelFileDescriptor;
 import android.provider.OpenableColumns;
 import android.text.TextUtils;
 import android.util.JsonReader;
-import android.util.JsonWriter;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -21,9 +19,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
-import java.io.Writer;
 
 import dagger.Component;
 import krasilnikov.alexey.cryptopass.data.BookmarksStorage;
@@ -162,7 +158,6 @@ public class ActionService extends IntentService {
     private void readBookmarks(JsonReader reader) throws IOException {
         reader.beginArray();
 
-        Uri bookmarksUri = Data.makeBookmarksUri(this);
         while (reader.hasNext()) {
             reader.beginObject();
 
