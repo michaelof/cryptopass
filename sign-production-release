@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+cp app/build/outputs/apk/app-production-release-unsigned.apk app/build/outputs/apk/app-production-release-unaligned.apk
+
+jarsigner -verbose -tsa http://timestamp.digicert.com -keystore NONE -storetype PKCS11 -providerclass sun.security.pkcs11.SunPKCS11 -providerArg pkcs11_linux.config -providerName SunPKCS11-yubi app/build/outputs/apk/app-production-release-unaligned.apk "Certificate for Digital Signature"  -J-Djava.security.debug=sunpkcs11 || exit 1
+
+$ANDROID_HOME/build-tools/23.0.2/zipalign -f -v 4 app/build/outputs/apk/app-production-release-unaligned.apk app/build/outputs/apk/app-production-release.apk || exit 1
+
