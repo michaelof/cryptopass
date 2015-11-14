@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.Window;
 import android.view.WindowManager;
 
 import krasilnikov.alexey.cryptopass.ActionService;
@@ -34,11 +33,14 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     private static final int REQUEST_CODE_IMPORT = 1;
 
     @ActivityScoped
-    @dagger.Component(dependencies = AppComponent.class, modules = ActivityModule.class)
+    @dagger.Component(dependencies = AppComponent.class,
+            modules = {ActivityModule.class, ProgressControllerModule.class})
     public interface Component {
         OperationManager getOperationManager();
 
         SendHelper getSendHelper();
+
+        ProgressController getProgressController();
 
         void inject(BookmarksFragment fragment);
     }
@@ -85,9 +87,9 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        getComponent().getProgressController().onCreate();
 
-        setProgressBarIndeterminateVisibility(false);
+        setContentView(R.layout.start);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_SECURE);
 
@@ -112,7 +114,7 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     }
 
     void updateProgress() {
-        setProgressBarIndeterminateVisibility(getComponent().getOperationManager().isInOperation());
+        getComponent().getProgressController().setVisibility(getComponent().getOperationManager().isInOperation());
     }
 
     @Override
