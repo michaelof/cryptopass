@@ -32,7 +32,6 @@ import krasilnikov.alexey.cryptopass.Bookmark;
 import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.PBKDF2Args;
 import krasilnikov.alexey.cryptopass.R;
-import krasilnikov.alexey.cryptopass.Version;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class MainFragment extends Fragment implements TextWatcher, ResultHandler, LoaderManager.LoaderCallbacks<GenerateLoaderResult> {
@@ -48,14 +47,6 @@ public class MainFragment extends Fragment implements TextWatcher, ResultHandler
         }
 
         return fragment;
-    }
-
-    public MainFragment() {
-        super();
-
-        if (Version.isHoneycomb()) {
-            setRetainInstance(true);
-        }
     }
 
     boolean mWasPaused = false;

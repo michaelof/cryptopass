@@ -28,7 +28,6 @@ import krasilnikov.alexey.cryptopass.ActionService;
 import krasilnikov.alexey.cryptopass.BookmarksAdapter;
 import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.R;
-import krasilnikov.alexey.cryptopass.Version;
 import krasilnikov.alexey.cryptopass.data.BookmarksStorage;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
@@ -83,10 +82,6 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
     @Override
     public void onStart() {
         super.onStart();
-
-        if (Version.isHoneycomb()) {
-            setRetainInstance(true);
-        }
 
         getLoaderManager().getLoader(Loaders.BOOKMARKS_LOADER).onContentChanged();
 
