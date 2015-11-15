@@ -34,7 +34,7 @@ import krasilnikov.alexey.cryptopass.data.BookmarksStorage;
 public class BookmarksFragment extends ListFragment implements LoaderManager.LoaderCallbacks<Cursor> {
     private static final int INVALID_ID = -1;
 
-    public interface IListener {
+    public interface Listener {
         void noBookmarks();
 
         void showBookmark(Uri data);
@@ -207,7 +207,7 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
         mBookmarksAdapter.swapCursor(null);
     }
 
-    IListener getListener() {
-        return (IListener) getActivity();
+    Listener getListener() {
+        return (Listener) getActivity();
     }
 }

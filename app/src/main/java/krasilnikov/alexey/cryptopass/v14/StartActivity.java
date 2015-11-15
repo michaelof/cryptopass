@@ -25,7 +25,7 @@ import krasilnikov.alexey.cryptopass.scope.ActivityScoped;
 import krasilnikov.alexey.cryptopass.sync.SendHelper;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-public class StartActivity extends Activity implements BookmarksFragment.IListener, OperationManager.OperationListener {
+public class StartActivity extends Activity implements BookmarksFragment.Listener, OperationManager.OperationListener {
     private static final String FIRST_START = "firstStart";
 
     private static final String BOOKMARKS_TAG = "bookmarks";
