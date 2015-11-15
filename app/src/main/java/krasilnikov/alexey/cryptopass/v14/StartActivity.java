@@ -12,6 +12,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.WindowManager;
 
+import javax.inject.Inject;
+
 import krasilnikov.alexey.cryptopass.ActionService;
 import krasilnikov.alexey.cryptopass.AppComponent;
 import krasilnikov.alexey.cryptopass.Data;
@@ -36,13 +38,9 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     @dagger.Component(dependencies = AppComponent.class,
             modules = {ActivityModule.class, ProgressControllerModule.class})
     public interface Component {
-        OperationManager getOperationManager();
-
-        SendHelper getSendHelper();
-
-        ProgressController getProgressController();
-
         void inject(BookmarksFragment fragment);
+
+        void inject(StartActivity startActivity);
     }
 
     private Component mComponent;
@@ -53,6 +51,15 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
             updateProgress();
         }
     };
+
+    @Inject
+    OperationManager mOperationManager;
+
+    @Inject
+    SendHelper mSendHelper;
+
+    @Inject
+    ProgressController mProgressController;
 
     private void handleIntent(Intent intent) {
         boolean firstStart = intent.getBooleanExtra(FIRST_START, false);
@@ -87,7 +94,7 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getComponent().getProgressController().onCreate();
+        getComponent().inject(this);
 
         setContentView(R.layout.start);
 
@@ -109,19 +116,19 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
     protected void onResume() {
         super.onResume();
 
-        getComponent().getOperationManager().subscribe(this);
+        mOperationManager.subscribe(this);
         updateProgress();
     }
 
     void updateProgress() {
-        getComponent().getProgressController().setVisibility(getComponent().getOperationManager().isInOperation());
+        mProgressController.setVisibility(mOperationManager.isInOperation());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        getComponent().getOperationManager().unsubscribe(this);
+        mOperationManager.unsubscribe(this);
     }
 
     @Override
@@ -163,7 +170,7 @@ public class StartActivity extends Activity implements BookmarksFragment.IListen
                 return true;
 
             case R.id.send_bookmarks:
-                getComponent().getSendHelper().sendByProvider();
+                mSendHelper.sendByProvider();
                 return true;
 
             case R.id.import_bookmarks:

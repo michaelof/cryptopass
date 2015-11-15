@@ -16,10 +16,6 @@ public class ProgressControllerLollipop implements ProgressController {
         mActivity = activity;
     }
 
-    @Override
-    public void onCreate() {
-    }
-
     private View mProgressBar;
 
     @Override

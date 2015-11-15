@@ -21,7 +21,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 
+import javax.inject.Inject;
+
 import dagger.Component;
+import dagger.Lazy;
 import krasilnikov.alexey.cryptopass.data.BookmarksStorage;
 import krasilnikov.alexey.cryptopass.scope.ServiceScoped;
 import krasilnikov.alexey.cryptopass.sync.BookmarksWriter;
@@ -33,14 +36,17 @@ public class ActionService extends IntentService {
     @ServiceScoped
     @Component(dependencies = AppComponent.class)
     public interface ActionServiceComponent {
-        OperationManager getOperationManager();
-
-        BookmarksWriter getBookmarksWriter();
-
-        BookmarksStorage getStorage();
+        void inject(ActionService actionService);
     }
 
-    private ActionServiceComponent mComponent;
+    @Inject
+    OperationManager mOperationManager;
+
+    @Inject
+    Lazy<BookmarksWriter> mBookmarksWriter;
+
+    @Inject
+    BookmarksStorage mBookmarksStorage;
 
     public ActionService() {
         super("cryptopass");
@@ -50,9 +56,11 @@ public class ActionService extends IntentService {
     public void onCreate() {
         super.onCreate();
 
-        mComponent = DaggerActionService_ActionServiceComponent.builder().
+        ActionServiceComponent component = DaggerActionService_ActionServiceComponent.builder().
                 appComponent(MainApplication.getComponent(this)).
                 build();
+
+        component.inject(this);
     }
 
     private void saveBookmark(Intent intent) {
@@ -61,12 +69,11 @@ public class ActionService extends IntentService {
         int length = intent.getIntExtra(Data.ARGS_LENGTH, Data.DEFAULT_LENGTH);
 
         Uri bookmarksUri = Data.makeBookmarksUri(this);
-        OperationManager operationManager = mComponent.getOperationManager();
-        Object obj = operationManager.operationStarted(bookmarksUri);
+        Object obj = mOperationManager.operationStarted(bookmarksUri);
         try {
-            mComponent.getStorage().saveBookmark(username, url, length);
+            mBookmarksStorage.saveBookmark(username, url, length);
         } finally {
-            operationManager.operationEnded(bookmarksUri, obj);
+            mOperationManager.operationEnded(bookmarksUri, obj);
         }
     }
 
@@ -75,12 +82,11 @@ public class ActionService extends IntentService {
         String username = Data.getUsername(uri);
         String url = Data.getUrl(uri);
 
-        OperationManager operationManager = mComponent.getOperationManager();
-        Object obj = operationManager.operationStarted(uri);
+        Object obj = mOperationManager.operationStarted(uri);
         try {
-            mComponent.getStorage().deleteBookmark(username, url);
+            mBookmarksStorage.deleteBookmark(username, url);
         } finally {
-            operationManager.operationEnded(uri, obj);
+            mOperationManager.operationEnded(uri, obj);
         }
     }
 
@@ -128,8 +134,7 @@ public class ActionService extends IntentService {
     private void exportBookmarks(Intent intent) {
         Uri destination = intent.getData();
 
-        OperationManager operationManager = mComponent.getOperationManager();
-        Object obj = operationManager.operationStarted(destination);
+        Object obj = mOperationManager.operationStarted(destination);
         try {
             String displayName = getFileDisplayName(destination);
 
@@ -139,7 +144,7 @@ public class ActionService extends IntentService {
             ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(destination, "w");
             FileOutputStream outputStream =
                     new ParcelFileDescriptor.AutoCloseOutputStream(pfd);
-            mComponent.getBookmarksWriter().write(outputStream);
+            mBookmarksWriter.get().write(outputStream);
 
             stopForeground(true);
             NotificationManager notifManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -150,7 +155,7 @@ public class ActionService extends IntentService {
             Log.e("cryptopass", e.getMessage(), e);
             Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         } finally {
-            operationManager.operationEnded(destination, obj);
+            mOperationManager.operationEnded(destination, obj);
         }
     }
 
@@ -178,7 +183,7 @@ public class ActionService extends IntentService {
                 }
             }
 
-            mComponent.getStorage().saveBookmark(username, url, length);
+            mBookmarksStorage.saveBookmark(username, url, length);
 
             reader.endObject();
         }
@@ -189,8 +194,7 @@ public class ActionService extends IntentService {
     private void importBookmarks(Intent intent) {
         Uri source = intent.getData();
 
-        OperationManager operationManager = mComponent.getOperationManager();
-        Object obj = operationManager.operationStarted(source);
+        Object obj = mOperationManager.operationStarted(source);
         try {
             String displayName = getFileDisplayName(source);
 
@@ -212,7 +216,7 @@ public class ActionService extends IntentService {
             Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         } finally {
             stopForeground(true);
-            operationManager.operationEnded(source, obj);
+            mOperationManager.operationEnded(source, obj);
         }
     }
 

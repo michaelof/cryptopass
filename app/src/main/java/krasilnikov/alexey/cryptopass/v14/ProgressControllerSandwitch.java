@@ -11,10 +11,7 @@ class ProgressControllerSandwitch implements ProgressController {
     @Inject
     public ProgressControllerSandwitch(Activity activity) {
         mActivity = activity;
-    }
 
-    @Override
-    public void onCreate() {
         mActivity.requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         mActivity.setProgressBarIndeterminateVisibility(false);
     }
