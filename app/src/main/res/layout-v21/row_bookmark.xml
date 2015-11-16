@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<CheckedTextView xmlns:android="http://schemas.android.com/apk/res/android"
+                 android:layout_width="fill_parent"
+                 android:layout_height="@dimen/listItemHeight"
+                 android:background="@drawable/bookmark_background"
+                 android:drawableStart="@drawable/ic_star_white_24dp"
+                 android:gravity="center_vertical"
+                 android:paddingStart="@dimen/listPadding"
+                 android:paddingEnd="@dimen/listPadding"
+                 android:textAppearance="@android:style/TextAppearance.Medium">
+
+</CheckedTextView>
