@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="bookmarks" type="layout">@android:layout/list_content</item>
+</resources>

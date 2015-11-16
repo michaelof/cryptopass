@@ -44,6 +44,7 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
     public Provider<BookmarkCursorLoader> mBookmarksLoaderProvider;
 
     private BookmarksAdapter mBookmarksAdapter;
+    private boolean mHaveEmptyView;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -54,14 +55,27 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
         getLoaderManager().initLoader(Loaders.BOOKMARKS_LOADER, null, this);
     }
 
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        final View view = super.onCreateView(inflater, container, savedInstanceState);
+        final View view = inflater.inflate(R.layout.bookmarks, container, false);
 
-        final ListView listView = (ListView) view.findViewById(android.R.id.list);
+        final View plusView = view.findViewById(R.id.plus);
+        if (plusView != null) {
+            mHaveEmptyView = false;
+            plusView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    getListener().showBookmark(null);
+                }
+            });
+        } else {
+            mHaveEmptyView = true;
+            final ListView listView = (ListView) view.findViewById(android.R.id.list);
 
-        final View headerView = inflater.inflate(R.layout.row_empty, listView, false);
+            final View headerView = inflater.inflate(R.layout.row_empty, listView, false);
 
-        listView.addHeaderView(headerView);
+            listView.addHeaderView(headerView);
+        }
 
         return view;
     }
@@ -158,11 +172,16 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
         }
     };
 
-    private void deleteBookmark(final int listPosition) {
+    private void deleteBookmark(int listPosition) {
         Cursor cursor = mBookmarksAdapter.getCursor();
 
-        if (listPosition > 0) {
-            Uri uri = BookmarksStorage.getBookmarkUri(getActivity(), cursor, listPosition - 1);
+        if (mHaveEmptyView) {
+            listPosition = listPosition - 1;
+        }
+
+        if (listPosition >= 0) {
+            Uri uri = BookmarksStorage.getBookmarkUri(getActivity(), cursor, listPosition);
+            assert uri != null;
             Intent intent = new Intent(Data.ACTION_DELETE, uri);
             intent.setClass(getActivity(), ActionService.class);
 
@@ -170,19 +189,23 @@ public class BookmarksFragment extends ListFragment implements LoaderManager.Loa
         }
     }
 
-    private void showBookmark(final int listPosition) {
+    private void showBookmark(int listPosition) {
         Cursor cursor = mBookmarksAdapter.getCursor();
 
-        if (listPosition > 0) {
-            Uri data = BookmarksStorage.getBookmarkUri(getActivity(), cursor, listPosition - 1);
+        if (mHaveEmptyView) {
+            listPosition = listPosition - 1;
+        }
+
+        if (listPosition >= 0) {
+            Uri data = BookmarksStorage.getBookmarkUri(getActivity(), cursor, listPosition);
 
             getListener().showBookmark(data);
         } else {
-
             getListener().showBookmark(null);
         }
     }
 
+    @Override
     public void onListItemClick(final ListView listView, final View rowView, final int position, final long id) {
         showBookmark(position);
     }
