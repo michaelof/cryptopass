@@ -3,7 +3,6 @@ package krasilnikov.alexey.cryptopass;
 import android.annotation.TargetApi;
 import android.app.IntentService;
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -30,9 +29,6 @@ import krasilnikov.alexey.cryptopass.scope.ServiceScoped;
 import krasilnikov.alexey.cryptopass.sync.BookmarksWriter;
 
 public class ActionService extends IntentService {
-    private static final int NOTIFICATION_EXPORT = 1;
-    private static final int NOTIFICATION_IMPORT = 2;
-
     @ServiceScoped
     @Component(dependencies = AppComponent.class)
     public interface ActionServiceComponent {
@@ -47,6 +43,8 @@ public class ActionService extends IntentService {
 
     @Inject
     BookmarksStorage mBookmarksStorage;
+
+    private int mLastNotificationId = 0;
 
     public ActionService() {
         super("cryptopass");
@@ -137,24 +135,20 @@ public class ActionService extends IntentService {
         Object obj = mOperationManager.operationStarted(destination);
         try {
             String displayName = getFileDisplayName(destination);
+            final int notification = ++mLastNotificationId;
 
-            startForeground(NOTIFICATION_EXPORT,
+            startForeground(notification,
                     makeProgressNotification(R.string.title_export_progress, displayName));
 
             ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(destination, "w");
             FileOutputStream outputStream =
                     new ParcelFileDescriptor.AutoCloseOutputStream(pfd);
             mBookmarksWriter.get().write(outputStream);
-
-            stopForeground(true);
-            NotificationManager notifManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            notifManager.notify(NOTIFICATION_EXPORT, makeCompleteExportNotification(displayName));
-
         } catch (Exception e) {
-            stopForeground(true);
             Log.e("cryptopass", e.getMessage(), e);
             Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         } finally {
+            stopForeground(true);
             mOperationManager.operationEnded(destination, obj);
         }
     }
@@ -197,8 +191,9 @@ public class ActionService extends IntentService {
         Object obj = mOperationManager.operationStarted(source);
         try {
             String displayName = getFileDisplayName(source);
+            final int notification = ++mLastNotificationId;
 
-            startForeground(NOTIFICATION_IMPORT,
+            startForeground(notification,
                     makeProgressNotification(R.string.title_import_progress, displayName));
 
             ParcelFileDescriptor pfd = getContentResolver().openFileDescriptor(source, "r");
