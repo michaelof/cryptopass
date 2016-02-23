@@ -42,11 +42,16 @@ public class DataProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
-        mComponent = DaggerDataProvider_Component.builder().
-                appComponent(MainApplication.getComponent(getContext())).
-                build();
-
         return true;
+    }
+
+    private Component getComponent() {
+        if (mComponent == null) {
+            mComponent = DaggerDataProvider_Component.builder().
+                    appComponent(MainApplication.getComponent(getContext())).
+                    build();
+        }
+        return mComponent;
     }
 
     @Override
@@ -97,9 +102,9 @@ public class DataProvider extends ContentProvider {
         }
 
         try {
-            File tmpFile = File.createTempFile("export", String.valueOf(SystemClock.uptimeMillis()));
+            File tmpFile = File.createTempFile("export", null, context.getCacheDir());
 
-            mComponent.getBookmarksWriter().write(new FileOutputStream(tmpFile));
+            getComponent().getBookmarksWriter().write(new FileOutputStream(tmpFile));
 
             return ParcelFileDescriptor.open(tmpFile, ParcelFileDescriptor.MODE_READ_ONLY);
         } catch (IOException | JSONException e) {
