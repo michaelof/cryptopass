@@ -26,7 +26,7 @@ import krasilnikov.alexey.cryptopass.AppComponent;
 import krasilnikov.alexey.cryptopass.BookmarksAdapter;
 import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.MainApplication;
-import krasilnikov.alexey.cryptopass.OperationManager;
+import krasilnikov.alexey.cryptopass.ProgressNotifier;
 import krasilnikov.alexey.cryptopass.R;
 import krasilnikov.alexey.cryptopass.data.BookmarksStorage;
 import krasilnikov.alexey.cryptopass.scope.ActivityModule;
@@ -34,13 +34,13 @@ import krasilnikov.alexey.cryptopass.scope.ActivityScoped;
 import krasilnikov.alexey.cryptopass.sync.BookmarksSerializer;
 import krasilnikov.alexey.cryptopass.sync.SendHelper;
 
-public class StartActivity extends ListActivity implements OnItemClickListener, OperationManager.OperationListener {
+public class StartActivity extends ListActivity implements OnItemClickListener, ProgressNotifier.OperationListener {
     private static final int INVALID_ID = -1;
 
     @ActivityScoped
     @dagger.Component(dependencies = AppComponent.class, modules = ActivityModule.class)
     public interface Component {
-        OperationManager getOperationManager();
+        ProgressNotifier getProgressNotifier();
 
         BookmarksStorage getStorage();
 
@@ -119,7 +119,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
     protected void onResume() {
         super.onResume();
 
-        mComponent.getOperationManager().subscribe(this);
+        mComponent.getProgressNotifier().subscribe(this);
         mComponent.getStorage().registerObserver(mBookmarksObserver);
     }
 
@@ -128,7 +128,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
         super.onPause();
 
         mComponent.getStorage().unregisterObserver(mBookmarksObserver);
-        mComponent.getOperationManager().unsubscribe(this);
+        mComponent.getProgressNotifier().unsubscribe(this);
     }
 
     @Override
@@ -224,7 +224,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
     private final Runnable mUpdateProgressRunnable = new Runnable() {
         @Override
         public void run() {
-            setProgressBarIndeterminateVisibility(mComponent.getOperationManager().isInOperation());
+            setProgressBarIndeterminateVisibility(mComponent.getProgressNotifier().isInOperation());
         }
     };
 

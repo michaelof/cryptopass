@@ -36,7 +36,7 @@ public class ActionService extends IntentService {
     }
 
     @Inject
-    OperationManager mOperationManager;
+    ProgressNotifier mProgressNotifier;
 
     @Inject
     Lazy<BookmarksWriter> mBookmarksWriter;
@@ -67,11 +67,11 @@ public class ActionService extends IntentService {
         int length = intent.getIntExtra(Data.ARGS_LENGTH, Data.DEFAULT_LENGTH);
 
         Uri bookmarksUri = Data.makeBookmarksUri(this);
-        Object obj = mOperationManager.operationStarted(bookmarksUri);
+        Object obj = mProgressNotifier.operationStarted(bookmarksUri);
         try {
             mBookmarksStorage.saveBookmark(username, url, length);
         } finally {
-            mOperationManager.operationEnded(bookmarksUri, obj);
+            mProgressNotifier.operationEnded(bookmarksUri, obj);
         }
     }
 
@@ -80,11 +80,11 @@ public class ActionService extends IntentService {
         String username = Data.getUsername(uri);
         String url = Data.getUrl(uri);
 
-        Object obj = mOperationManager.operationStarted(uri);
+        Object obj = mProgressNotifier.operationStarted(uri);
         try {
             mBookmarksStorage.deleteBookmark(username, url);
         } finally {
-            mOperationManager.operationEnded(uri, obj);
+            mProgressNotifier.operationEnded(uri, obj);
         }
     }
 
@@ -118,21 +118,10 @@ public class ActionService extends IntentService {
     }
 
     @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-    private Notification makeCompleteExportNotification(String displayName) {
-        Notification.Builder b = new Notification.Builder(this);
-        b.setSmallIcon(R.drawable.icon);
-        b.setContentTitle(getString(R.string.title_export_complete));
-        if (!TextUtils.isEmpty(displayName)) {
-            b.setContentText(displayName);
-        }
-        return b.getNotification();
-    }
-
-    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
     private void exportBookmarks(Intent intent) {
         Uri destination = intent.getData();
 
-        Object obj = mOperationManager.operationStarted(destination);
+        Object obj = mProgressNotifier.operationStarted(destination);
         try {
             String displayName = getFileDisplayName(destination);
             final int notification = ++mLastNotificationId;
@@ -149,7 +138,7 @@ public class ActionService extends IntentService {
             Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         } finally {
             stopForeground(true);
-            mOperationManager.operationEnded(destination, obj);
+            mProgressNotifier.operationEnded(destination, obj);
         }
     }
 
@@ -188,7 +177,7 @@ public class ActionService extends IntentService {
     private void importBookmarks(Intent intent) {
         Uri source = intent.getData();
 
-        Object obj = mOperationManager.operationStarted(source);
+        Object obj = mProgressNotifier.operationStarted(source);
         try {
             String displayName = getFileDisplayName(source);
             final int notification = ++mLastNotificationId;
@@ -211,7 +200,7 @@ public class ActionService extends IntentService {
             Toast.makeText(this, e.getLocalizedMessage(), Toast.LENGTH_LONG).show();
         } finally {
             stopForeground(true);
-            mOperationManager.operationEnded(source, obj);
+            mProgressNotifier.operationEnded(source, obj);
         }
     }
 

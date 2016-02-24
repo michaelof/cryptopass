@@ -18,14 +18,14 @@ import krasilnikov.alexey.cryptopass.ActionService;
 import krasilnikov.alexey.cryptopass.AppComponent;
 import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.MainApplication;
-import krasilnikov.alexey.cryptopass.OperationManager;
+import krasilnikov.alexey.cryptopass.ProgressNotifier;
 import krasilnikov.alexey.cryptopass.R;
 import krasilnikov.alexey.cryptopass.scope.ActivityModule;
 import krasilnikov.alexey.cryptopass.scope.ActivityScoped;
 import krasilnikov.alexey.cryptopass.sync.SendHelper;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
-public class StartActivity extends Activity implements BookmarksFragment.Listener, OperationManager.OperationListener {
+public class StartActivity extends Activity implements BookmarksFragment.Listener, ProgressNotifier.OperationListener {
     private static final String FIRST_START = "firstStart";
 
     private static final String BOOKMARKS_TAG = "bookmarks";
@@ -53,7 +53,7 @@ public class StartActivity extends Activity implements BookmarksFragment.Listene
     };
 
     @Inject
-    OperationManager mOperationManager;
+    ProgressNotifier mProgressNotifier;
 
     @Inject
     SendHelper mSendHelper;
@@ -116,19 +116,19 @@ public class StartActivity extends Activity implements BookmarksFragment.Listene
     protected void onResume() {
         super.onResume();
 
-        mOperationManager.subscribe(this);
+        mProgressNotifier.subscribe(this);
         updateProgress();
     }
 
     void updateProgress() {
-        mProgressController.setVisibility(mOperationManager.isInOperation());
+        mProgressController.setVisibility(mProgressNotifier.isInOperation());
     }
 
     @Override
     protected void onPause() {
         super.onPause();
 
-        mOperationManager.unsubscribe(this);
+        mProgressNotifier.unsubscribe(this);
     }
 
     @Override

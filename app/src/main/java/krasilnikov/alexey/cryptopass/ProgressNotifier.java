@@ -8,38 +8,23 @@ import java.util.HashMap;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+/**
+ * This class intended to link UI progress and actual operations.
+ */
 @Singleton
-public class OperationManager {
+public class ProgressNotifier {
     @Inject
-    public OperationManager() {
+    public ProgressNotifier() {
     }
 
+    /**
+     * Listener to be notified about the beginning and the end of the operations.
+     * Please be aware, methods can be called from any thread.
+     */
     public interface OperationListener {
         void onOperationStarted(Uri uri);
 
         void onOperationEnded(Uri uri);
-    }
-
-    public abstract static class AbstractOperationListener implements OperationListener {
-        protected abstract boolean isInterest(Uri uri);
-
-        protected abstract void onOperationStarted();
-
-        protected abstract void onOperationEnded();
-
-        @Override
-        public void onOperationStarted(Uri uri) {
-            if (isInterest(uri)) {
-                onOperationStarted();
-            }
-        }
-
-        @Override
-        public void onOperationEnded(Uri uri) {
-            if (isInterest(uri)) {
-                onOperationEnded();
-            }
-        }
     }
 
     private final HashMap<Uri, Object> mOperationMap = new HashMap<>();
@@ -58,6 +43,11 @@ public class OperationManager {
         while (mListenersArray.remove(listener)) ;
     }
 
+    /**
+     * This method should be called when long operation started.
+     * Can be called from any thread.
+     * @return the operation id.
+     */
     public synchronized Object operationStarted(Uri uri) {
         final Object obj;
         synchronized (this) {

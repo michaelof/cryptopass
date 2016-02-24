@@ -8,7 +8,7 @@ import krasilnikov.alexey.cryptopass.data.BookmarksStorage;
 @Singleton
 @Component(modules = AppModule.class)
 public interface AppComponent {
-    OperationManager getOperationManager();
+    ProgressNotifier getProgressNotifier();
 
     BookmarksStorage getBookmarksStorage();
 }
