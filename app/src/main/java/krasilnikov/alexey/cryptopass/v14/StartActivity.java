@@ -23,6 +23,7 @@ import krasilnikov.alexey.cryptopass.R;
 import krasilnikov.alexey.cryptopass.scope.ActivityModule;
 import krasilnikov.alexey.cryptopass.scope.ActivityScoped;
 import krasilnikov.alexey.cryptopass.sync.SendHelper;
+import krasilnikov.alexey.cryptopass.sync.SyncAuthController;
 
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 public class StartActivity extends Activity implements BookmarksFragment.Listener, OperationManager.OperationListener {
@@ -60,6 +61,9 @@ public class StartActivity extends Activity implements BookmarksFragment.Listene
 
     @Inject
     ProgressController mProgressController;
+
+    @Inject
+    SyncAuthController mSyncAuthController;
 
     private void handleIntent(Intent intent) {
         boolean firstStart = intent.getBooleanExtra(FIRST_START, false);
@@ -113,6 +117,13 @@ public class StartActivity extends Activity implements BookmarksFragment.Listene
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        mSyncAuthController.onStart();
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 
@@ -132,9 +143,25 @@ public class StartActivity extends Activity implements BookmarksFragment.Listene
     }
 
     @Override
+    protected void onStop() {
+        super.onStop();
+
+        mSyncAuthController.onStop();
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem syncItem = menu.findItem(R.id.sync);
+        if (syncItem != null) {
+            mSyncAuthController.onPrepareOptionsMenu(syncItem);
+        }
+        return super.onPrepareOptionsMenu(menu);
     }
 
     private void goHome() {
@@ -180,6 +207,10 @@ public class StartActivity extends Activity implements BookmarksFragment.Listene
                 startExport();
                 return true;
 
+            case R.id.sync:
+                mSyncAuthController.onItemSelected();
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -187,6 +218,8 @@ public class StartActivity extends Activity implements BookmarksFragment.Listene
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        mSyncAuthController.onActivityResult(requestCode, resultCode, data);
+
         if (RESULT_OK == resultCode) {
             switch (requestCode) {
                 case REQUEST_CODE_IMPORT: {
