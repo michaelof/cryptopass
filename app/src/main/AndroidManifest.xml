@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools"
-          package="krasilnikov.alexey.cryptopass">
+<manifest package="krasilnikov.alexey.cryptopass"
+          xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools">
 
     <application android:name=".MainApplication"
-                 android:icon="@drawable/icon"
                  android:allowBackup="true"
                  android:fullBackupContent="true"
+                 android:icon="@drawable/icon"
                  android:label="@string/app_name"
                  android:supportsRtl="true"
                  tools:ignore="GoogleAppIndexingWarning">
@@ -43,9 +43,9 @@
         </activity>
 
         <activity android:name="krasilnikov.alexey.cryptopass.v14.StartActivity"
-                  android:theme="@style/AppTheme"
                   android:enabled="@bool/atLeastIceScreamSandwich"
-                  android:label="@string/app_name">
+                  android:label="@string/app_name"
+                  android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
