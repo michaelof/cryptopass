@@ -5,5 +5,8 @@ local.properties
 app/build/
 build/
 
+bazel-*
+
+*.swp
 *.iml
 .idea/
