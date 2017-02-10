@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.2'
+    compileSdkVersion 25
+    buildToolsVersion '25.0.0'
     defaultConfig {
         applicationId 'krasilnikov.alexey.cryptopass'
         minSdkVersion 9
-        targetSdkVersion 23
-        versionCode 3
-        versionName '1.1'
+        targetSdkVersion 25
+        versionCode 4
+        versionName '1.2'
 
         testInstrumentationRunner 'android.support.test.runner.AndroidJUnitRunner'
     }
@@ -37,9 +37,9 @@ android {
 }
 
 dependencies {
-    provided 'com.google.dagger:dagger-compiler:2.0'
-    provided 'javax.annotation:jsr250-api:1.0'
-    compile 'com.google.dagger:dagger:2.0.2'
+    compile 'com.google.dagger:dagger:2.9'
+    annotationProcessor 'com.google.dagger:dagger-compiler:2.9'
+
     testCompile 'junit:junit:4.12'
     testCompile 'org.robolectric:robolectric:3.0'
     testCompile 'org.mockito:mockito-core:2.0.31-beta'
