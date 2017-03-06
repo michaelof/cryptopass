@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.0'
+    buildToolsVersion '25.0.2'
     defaultConfig {
         applicationId 'krasilnikov.alexey.cryptopass'
         minSdkVersion 9
@@ -41,6 +41,6 @@ dependencies {
     annotationProcessor 'com.google.dagger:dagger-compiler:2.9'
 
     testCompile 'junit:junit:4.12'
-    testCompile 'org.robolectric:robolectric:3.0'
-    testCompile 'org.mockito:mockito-core:2.0.31-beta'
+    testCompile 'org.robolectric:robolectric:3.3'
+    testCompile 'org.mockito:mockito-core:2.7.14'
 }

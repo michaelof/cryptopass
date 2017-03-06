@@ -1,7 +1,6 @@
 package krasilnikov.alexey.cryptopass.v8;
 
 import android.database.MatrixCursor;
-import android.os.Build;
 
 import junit.framework.Assert;
 
@@ -9,15 +8,15 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.RobolectricGradleTestRunner;
+import org.robolectric.RobolectricTestRunner;
 import org.robolectric.annotation.Config;
 
 import krasilnikov.alexey.cryptopass.BuildConfig;
 import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.sync.BookmarksSerializer;
 
-@RunWith(RobolectricGradleTestRunner.class)
-@Config(constants = BuildConfig.class, sdk = Build.VERSION_CODES.JELLY_BEAN)
+@RunWith(RobolectricTestRunner.class)
+@Config(constants = BuildConfig.class)
 public class BookmarksSerializerTest {
 
     private MatrixCursor makeMatrix() {
