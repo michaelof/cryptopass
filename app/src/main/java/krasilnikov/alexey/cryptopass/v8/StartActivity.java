@@ -1,5 +1,6 @@
 package krasilnikov.alexey.cryptopass.v8;
 
+import android.app.Activity;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.database.ContentObserver;
@@ -21,6 +22,7 @@ import android.widget.TextView;
 
 import org.json.JSONException;
 
+import dagger.BindsInstance;
 import krasilnikov.alexey.cryptopass.ActionService;
 import krasilnikov.alexey.cryptopass.AppComponent;
 import krasilnikov.alexey.cryptopass.BookmarksAdapter;
@@ -47,6 +49,16 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
         BookmarksSerializer getBookmarksSerializer();
 
         SendHelper getSendHelper();
+
+        @dagger.Component.Builder
+        interface Builder {
+            Builder appComponent(AppComponent app);
+
+            @BindsInstance
+            Builder activity(Activity activity);
+
+            Component build();
+        }
     }
 
     private Component mComponent;
@@ -61,7 +73,7 @@ public class StartActivity extends ListActivity implements OnItemClickListener, 
 
         mComponent = DaggerStartActivity_Component.builder().
                 appComponent(MainApplication.getComponent(this)).
-                activityModule(new ActivityModule(this)).
+                activity(this).
                 build();
 
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);

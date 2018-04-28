@@ -14,6 +14,8 @@ import android.view.WindowManager;
 
 import javax.inject.Inject;
 
+import dagger.BindsInstance;
+import dagger.Component;
 import krasilnikov.alexey.cryptopass.ActionService;
 import krasilnikov.alexey.cryptopass.AppComponent;
 import krasilnikov.alexey.cryptopass.Data;
@@ -41,6 +43,16 @@ public class StartActivity extends Activity implements BookmarksFragment.Listene
         void inject(BookmarksFragment fragment);
 
         void inject(StartActivity startActivity);
+
+        @dagger.Component.Builder
+        interface Builder {
+            Builder appComponent(AppComponent app);
+
+            @BindsInstance
+            Builder activity(Activity activity);
+
+            Component build();
+        }
     }
 
     private Component mComponent;
@@ -75,7 +87,7 @@ public class StartActivity extends Activity implements BookmarksFragment.Listene
         if (mComponent == null) {
             mComponent = DaggerStartActivity_Component.builder().
                     appComponent(MainApplication.getComponent(this)).
-                    activityModule(new ActivityModule(this)).
+                    activity(this).
                     build();
         }
         return mComponent;
