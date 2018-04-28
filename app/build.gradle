@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 25
-    buildToolsVersion '25.0.2'
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId 'krasilnikov.alexey.cryptopass'
         minSdkVersion 9
@@ -24,9 +24,14 @@ android {
         }
     }
 
+    flavorDimensions 'channel'
+
     productFlavors {
-        production {}
+        production {
+            dimension 'channel'
+        }
         canary {
+            dimension 'channel'
             applicationId 'krasilnikov.alexey.cryptopass.canary'
         }
     }
@@ -37,10 +42,10 @@ android {
 }
 
 dependencies {
-    compile 'com.google.dagger:dagger:2.9'
+    implementation 'com.google.dagger:dagger:2.9'
     annotationProcessor 'com.google.dagger:dagger-compiler:2.9'
 
     testCompile 'junit:junit:4.12'
-    testCompile 'org.robolectric:robolectric:3.3'
-    testCompile 'org.mockito:mockito-core:2.7.14'
+    testCompile 'org.robolectric:robolectric:3.5.1'
+    testCompile 'org.mockito:mockito-core:2.11.0'
 }
