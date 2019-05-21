@@ -9,17 +9,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.annotation.Config;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import krasilnikov.alexey.cryptopass.BuildConfig;
 import krasilnikov.alexey.cryptopass.Data;
 import krasilnikov.alexey.cryptopass.data.BookmarksStorage;
 
 @RunWith(RobolectricTestRunner.class)
-@Config(constants = BuildConfig.class)
 public class BookmarksWriterTest {
     private MatrixCursor makeMatrix() {
         return new MatrixCursor(Data.BOOKMARKS_PROJECTION);
@@ -33,7 +30,7 @@ public class BookmarksWriterTest {
     @Test
     public void outputFormatted() throws IOException, JSONException {
         BookmarksStorage storage = Mockito.mock(BookmarksStorage.class);
-        Mockito.when(storage.queryBookmarks(Mockito.<String[]>any())).thenReturn(makeOneRowData());
+        Mockito.when(storage.queryBookmarks(Mockito.any())).thenReturn(makeOneRowData());
 
         BookmarksWriter writer = new BookmarksWriter(storage, new BookmarksSerializer());
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
