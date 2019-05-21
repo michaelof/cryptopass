@@ -1,12 +1,12 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 28
 
     defaultConfig {
         applicationId 'krasilnikov.alexey.cryptopass'
         minSdkVersion 9
-        targetSdkVersion 25
+        targetSdkVersion 28
         versionCode 4
         versionName '1.2'
 
