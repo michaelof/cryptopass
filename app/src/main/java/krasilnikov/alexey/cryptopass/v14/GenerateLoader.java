@@ -110,12 +110,12 @@ class GenerateLoader extends Loader<GenerateLoaderResult> implements IterationsL
         }
     }
 
-    GenerateLoaderResult make(PBKDF2Args args) throws Exception {
+    GenerateLoaderResult make(PBKDF2Args args) {
         String secret = args.password;
         String username = args.username;
         String url = args.url;
 
-        String result = PasswordMaker.make(this, secret, username, url);
+        String result = PasswordMaker.INSTANCE.make(this, secret, username, url);
 
         if (result != null) {
             Bookmark bookmark = new Bookmark(url, username);
