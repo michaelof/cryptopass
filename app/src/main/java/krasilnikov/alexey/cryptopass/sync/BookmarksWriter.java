@@ -14,7 +14,6 @@ import java.io.Writer;
 import javax.inject.Inject;
 
 import krasilnikov.alexey.cryptopass.Data;
-import krasilnikov.alexey.cryptopass.Utils;
 import krasilnikov.alexey.cryptopass.data.BookmarksStorage;
 
 /**
@@ -35,13 +34,10 @@ public class BookmarksWriter {
      * Write bookmarks to given output steam. Stream will be closed after that.
      */
     public void write(OutputStream outputStream) throws IOException, JSONException {
-        Writer fileWriter = new OutputStreamWriter(outputStream);
-        try {
-            Cursor c = mBookmarksStorage.queryBookmarks(Data.BOOKMARKS_PROJECTION);
-
-            fileWriter.write(mBookmarksSerializer.serialize(c));
-        } finally {
-            Utils.close(fileWriter);
+        try (Writer fileWriter = new OutputStreamWriter(outputStream)) {
+            try (Cursor c = mBookmarksStorage.queryBookmarks(Data.BOOKMARKS_PROJECTION)) {
+                fileWriter.write(mBookmarksSerializer.serialize(c));
+            }
         }
     }
 
